@@ -1,0 +1,79 @@
+
+NOTES:
+    Note: When choosing a route where there are multiple possible routes to the same destination in the routing table. The router chooses the most specific route
+            - The router chooses the router with the largest netmask
+
+
+
+RESERVED NETWORKS
+    The following networks are reserved and should never be used to assign IP addresses
+
+    0.0.0.0/8                     -> broadcast network
+    127.0.0.0/8                   -> loop-back network
+    224.0.0.0/8 -> 239.0.0.0/8    -> Multicast IP addresses
+    240.0.0.0/8 -> 255.0.0.0/8    -> Experimental IP addresses
+
+    Additionally we should never use the smallest (network address) and largest (broadcast address) addresses in a sub-network
+     - The subnet 172.20.40.8/12 has network number 172.16.0.0 and broadcast 172.31.255.255, these should not be assigned as IP addresses to machines
+       on this subnet
+
+    Sometimes the zero subnet and the broadcast subnet of a classful network must not be used to assign IP addresses
+     - The class A network 15.40.100.20 has zero subnet 15.0.0.0 and broadcast subnet 15.255.255.255. These should not be used to assign IP addresses
+       if the "no ip subnet-zero" command is configured on a router or if the router is using routing protocol RIP-V1
+
+
+MICROSOFT WINDOWS TROUBLESHOOT COMMANDS
+
+    - ipconfig /all                 -> information about interfaces (IP address, mask, gateway and DNS server)
+    - ipconfig /release             -> Releases all DHCP IP addresses
+    - ipconfig /renew               -> Acquires an IP address using DHCP
+    - ipconfig /displaydns          -> Show all the hosts in the DNS (hostname) cache
+    - ipconfig /flushdns            -> flushes the DNS (hostname) cache
+
+    - nslookup <host name>          -> Send a DNs request for a specified host
+    - netstat -rn                   -> Show the hosts routing table
+
+    - arp -a                        -> list the arp cache
+    - arp -d                        -> flushes the ARP cache
+
+
+CISCO IOS TROUBLESHOOT COMMANDS
+
+    - ping                      -> used to check connectivity between two IP machines using an ICMP echo reply request
+    - show ip arp               -> list the content of the routers ARP cache (use to confirm LAN connectivity),
+                                   The Age entry in the ARP cache shows the amount of time since a packet was last received from that MAC address
+                                   If the Age entry is a '-' then taht MAC address is an interface on the router
+                                   Entries are removed from the arp cache after 240 seconds
+    - traceroute <ip Address>   -> Shows the IP addresses of the machines for all hops to a host (and the IP address of the destination host)
+                                   Also shows that amount of time taken to reach each hop (time is from when the traceroute command was issued)
+                                   If the traceroute command does not complete if will still list all the hops up to the point it could no longer proceed
+    - telnet                    -> Cisco IOS also provides the telnet command allowing you to telnet from one router to another (forming a chain)
+    - suspend                   -> This will detach from the current telnet session (while keeping it open) so that you can start a new one
+    - show sessions             -> shows all the active telnet sessions (The session marked with an '*' is the last active session)
+    - resume <session id>       -> Reattach to an active telnet session, If the session ID is not provided the session marked with an '*' is resumed
+                                   Note that typing '2' does the same as 'resume 2'
+    - disconnect <session id>   -> terminates the session identified by the session ID
+
+    - ssh -l <username> <ip address>        -> Establish an SSH session
+    - show ssh                              -> lists the users logged into the router using SSH
+    - show users                            -> lists the users logged into the router using either SSH, Telnet of the console
+
+
+
+TIPS FOR EXAM QUESTIONS
+
+    1. Check hosts on a LAN have the same network mask
+    2. On Point to Point WAN check interfaces on both ends are in the same subnet
+    3. Use above commands to find the routing information and IP addresses and mask on machines
+    4. The cause of failure on many exam questions is to do with IP address and network mask mismatches
+
+    5. Understand the ARP, DNS, DHCP and ICMP (ping) protocols
+
+        - Routing: If packet's destination is on the same subnet it is sent directly, otherwise it is sent to the default gateway
+        - Address assignment: DHCP can be used to assign an IP address network mask, DNS server and default gateway to an interface
+        - Name resolution: DNS is used to query the IP addresses of hosts given their hostname. The result is stored in a DNS cache
+        - IP to MAC resolution: ARP is used to find the MAC address of machines (other hosts or the default gateway) on the same subnet
+
+    6. use the "show ip route <address>" command to get the route used for a specific address"
+    7. When determining if an IP address is valid be sure to check if the IP address is the board cast of network address for that subnet
+    8. Routers can only forward packets through an interface if it is in the up/up state

@@ -1,0 +1,118 @@
+
+IPV6 INTERFACE
+
+    Each interface will have a link-local address and a global unicast address
+        - may have more IP addresses
+
+    IPv6 doesn't use broadcasts
+        - it just uses unicast and multicast
+
+    IPv6 also has anycast
+        - Place the same address on more than one device
+        - The packet will go to one of these devices
+        - We use this when we don't care which machine uses the packet (i.e. load balancing multiple servers hosting the same content)
+
+    LINK_LOCAL UNICAST ADDRESS
+        Link local addresses are IP addresses that are only valid in the local network (broadcast domain)
+        The addresses are generally assigned automatically through stateless address auto-configuration
+        The address is usually assigned based on the interfaces MAC address (ensures uniqueness)
+        Routers do not forward packets from link local addresses
+
+        In IPv4 the address range (169.254.0.0/16 is reserved for link local addresses)
+            - APIPA assigns these addresses automatically in IPv4
+        IPv6 Uses the address block fe80::/10 for link local addresses
+            - a group of zeros can be represented with a '::' so FE80:0000:0000:0000:0000:0000:0000:0000 becomes FE80::
+
+        Link local addresses are required on every interface that the IPv6 protocol is enabled on
+            - IPv6 interfaces will generally have two IP addresses, a link local address and a rotatable address
+        In IPv6 the link local address is used to run the neighbour discovery protocol (NTP)
+            - Used as port of stateless auto-configuration
+            - This protocol operates at the data link layer
+            - Handles ARP, ICMP (ping), router discovery and router redirect (equivalents)
+
+    GLOBAL UNICAST ADDRESSES
+
+
+IPv6 ADDRESSES
+    8 fields with 16 bits each (4 hex values) -> 128 bits
+
+        1. First four fields (16 hex values / 64 bits):                 Network portion
+        2. Last four fields (16 hex values / 64 bits):                  Host Portion (You should always have 64 bits for hosts)
+        3. The forth field is used for sub-netting                      Allows an organisation another 64,000 unique networks
+
+
+STATELESS AUTO-CONFIGURATION
+
+    Interface first creates a link local address
+        1. The network portion (64 bits) of the address is FE80:0000:0000:0000
+        2. The host portion (64 bits) of address is the interfaces MAC address (48 bits) with FFFE (16 bits) in the centre of the MAC address
+        3. This address only works on the local network, and can be used to contact the local router
+              - The router uses the FF02::1 multicast address to advertise itself                     (ICMP 134)
+              - The FF02::2 multicast address is used to request routers to identify themselves       (ICMP 133)
+
+    Process for interfaces to automatically learn link local and global unicast addresses
+        1. Interface first learns Network address from a router (first 64 bits)
+        2. Host portion (64 bits) of address is the interfaces MAC address (48 bits) with FFFE (16 bits) in the centre of the MAC address
+              - this is called the interface ID
+
+    STATEFUL AUTO-CONFIGURATION
+        Uses an IPv6DHCP server to assign IP addresses
+
+
+IPV6 HEADER
+    40 bytes long (can't vary)
+        1. Version
+        2. Class
+        3. Flow Label
+        4. Payload Length
+        5. Next Header                  Equivalent of protocol field
+        6. Hop Limit:                   Equivalent of time to live field
+        7. Source Address
+        8. Destination Address
+
+    Extension header used for Fragmentation:                  Additional bytes for additional header info
+    Next header field replaces protocol field:                The protocol the IP packet is carrying)
+
+
+NEIGHBOUR DISCOVERY PROTOCOL
+    ARP is replaced with a multicast address called the solicited node address
+
+    Router Advertisement:         FF02::1             (ICMP 134)            Reply from a router advertising itself
+    Router Discovery:             FF02::2             (ICMP 133)            Request routers on network to identify themselves
+    Neighbour Solicitation:                           (ICMP 135)            Similar to ping
+
+    Duplicate address detection:        Prevent interface from being assigned the same IPv6 address as another interface on the network
+
+
+IPV6 ROUTER CONFIGURATION
+    1. Go to global configuration mode              "configure terminal"
+    2. Enable IPv6 Routing                          "ipv6 unicast-routing"
+    3. Add ipv6 address to each interface           "ipv6 address 2001:0Db8:C34D:0011::/64 eui-64"          (note the subnet ID is 0011)
+                                                    "ipv6 address 2001:0Db8:C34D:0012::/64 eui-64"          (note the subnet ID is 0012)
+                                                    "ipv6 address 2001:0Db8:C34D:0013::/64 eui-64"          (note the subnet ID is 0013)
+
+    3b. Instead of assigning our own IPv6 address we can issue "ipv6 address autoconfig default"
+            - This will tell the router to find another router out that interface and use it's network portion (prefix)
+
+    4. Check IP addresses are correct               "show ipv6 interface brief"
+
+    NOTE that since IPv6 has no network and broadcast addresses we can use all 0s and all 1s has hosts
+    EUI_64 means we use the MAC address and insert FFFE in the middle to make the 64 bit host address portion
+
+    ADD IPV6 ROUTE TO ROUTING TABLE
+        ipv6 route 2001:1234:0:1::/64   2001:0DB8:0043:0091::1
+        ipv6 route <destination subnet> <IPv6 address of interface>             (Could also use the interface name i.e. FastEthernet 0/1)
+
+        Default Route:    "ipv6 route ::/0 FastEthernet 0/1"
+
+        "show ipv6 route"                                                       (View IPv6 Routing table)
+
+    NOTE: To enable RIP on an interface for IPv6 go to an interface and enter "ipv6 rip 1 enable"
+
+
+EUI_64
+    The MAC address is split into 2 24 bit chunks (the OUI and the NIC specific portion)
+    The FFFE value is inserted between the two MAC address chunks
+    Finally the 7th bit from the left is inverted
+          - If the result of this is 0 the address may not be globally unique
+          - If the result of this is 1 the address is globally unique

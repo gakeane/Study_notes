@@ -1,0 +1,98 @@
+
+ABBRIVIATIONS
+    ICANN:        Internet Corporation for assigned network numbers
+
+DEFINITIONS
+    Routing:                    Forwarding layer 3 packets (L3 PDUs)
+    Logical addressing:         Addresses which can be used regardless of the type of network
+    Routing Protocols:          Dynamically learns routes to different subnets
+    Routed Protocol:            The type of packet which is forwarded (i.e. IP)
+    Path Selection:             Can refer to both routing and routing protocols
+
+COMMANDS
+
+
+ADDRESS RESOLUTION PROTOCOL (ARP)
+    Used to learn the MAC address of a host given the hosts IP address and that the host is on the same sub-network
+    Sends out a broadcast request asking that the host with the matching IP address respond with it's MAC address (for that interface)
+    Used by routers to build the header and trailer of frames when forwarding packets (either to a host or another router)
+
+
+IP HEADER
+    The IP header consists of 20 bytes
+    4 bytes for the source IP address
+    4 bytes for the destination IP address
+    1 bytes for the protocol                    Identifies the protocol contained in the data portion of the packet (i.e. TCP)
+    1 byte for the time to live (TTL)           Prevents routing loops
+    2 bytes for the packet length
+    2 bytes for the header checksum
+
+
+ROUTING PROTOCOLS
+    Goal is to fill the touring table with entries to all other subnets
+    Learns routes advertised by neighboring routers
+
+
+CLASSES OF NETWORKS
+    Routers only care about the network part (not the host part) of the address their sending a packet to (until on the same ethernet)
+
+    CLASS A     2^8 Networks      2^24 - 2 Hosts      1.0.0.0 - 126.0.0.0
+    CLASS B     2^16 Networks     2^16 - 2 Hosts      128.0.0.0 - 191.255.0.0
+    CLASS C     2^24 Networks     2^8 - 2 Hosts       192.0.0.0 - 223.255.255.0
+
+    The network portion followed by all zeros (binary form) is the network address
+    The network portion followed by all ones (binary form) is the broadcast address
+    neither can be assigned as host IP addresses
+
+    Packets sent to a broadcast address are sent to all devices on that network
+    ICANN is responsible for assigning class A, B and C networks to companies and organizations ensure they IP address on the internet are repeated
+
+SUBNETTING
+    Takes a Class A, B or C network and divides it into a group of smaller networks
+    Given a class B network we could use the third octet as a subnet mask allowing for 256 networks each with 254 host IP addresses
+        This third octet would be called the subnet part
+
+    classful addressing:        We consider three parts of the IP address (network, subnet and host)
+    classless addressing:       We consider two parts of the IP address (combined network and subnet part, and the host part)
+
+    In classless addressing the first part is often called the prefix and is the portion responsible for routing
+    The subnet mask defines the part of the IP address which is the prefix
+        - If no network mask is defined it is assumed that the prefix is the same as the class of network
+
+
+IP ROUTING
+    All IP addresses in the same group must not be separated by a router
+    All IP addresses in different groups must be separated by a router
+
+    1. If host is in the same subnet, send the packet straight to the host (router can be in multiple subnets, one on each interface)
+    2. If host is in a different subnet, send the packet to the next hop router (known through routing table)
+
+        - Use the data-link FCS to check for transmission error, discard the frame if there were errors
+        - discard the old data-link header and trailer
+        - Compare the destination IP address to the routing table. The route that matches the destination identifies the outgoing interface
+        - Build a new datalink header and trailer for the packet
+
+IP ROUTING PROTOCOLS
+    IP routing depends on having an accurate and up to date routing table
+
+    ROLES OF A ROUTING PROTOCOL
+        1. Dynamically learn and fill the routing table with routes to all subnetworks
+        2. Choose the best route to a subnet if more than one route exists
+        3. Remove invalid routes from the routing table
+        4. Add new routes or replace lost routes as quickly as possible (convergence time)
+        5. Prevent routing loops (packet endlessly routed in a loop)
+
+    FUNCTIONS OF A ROUTING Protocol
+        1. Adds route to it's routing table for all directly connected subnets (The subnets it's interfaces are in)
+        2. Advertise to neighboring routers all routes in the current routing table (routing update)
+        3. Add routes advertised by neighboring routers to routing table with the neighboring router as the next hop router
+
+NETWORK UTILITIES
+
+    DNS (Domain Name Resolution):           Resolves a host name to an IP address. Runs on a server. Each host knows the IP address of it's local DNS server
+    ARP (Address Resolution Protocol):      Finds a MAC address of a host in the same subnet given the hosts IP address. (sends out a broadcast message on the subnet)
+    DHCP (Dynamic Host Protocol):           Automatically assigns IP addresses, default gateway, DNS server and network masks to hosts on a subnet (normally can't go through a router)
+    ping (ICMP echo request):               Sends a packets to another host requesting it to return a packet (used to test connectivity over a network)
+
+    NOTE: Results of a ARP broadcast are stored in the hosts ARP cache
+    NOTE: servers generally have a static IP addresses so clients know where to find them, as such they do not use DHCP

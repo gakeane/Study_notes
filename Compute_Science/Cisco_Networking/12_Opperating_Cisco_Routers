@@ -1,0 +1,188 @@
+
+ABBREVIATIONS:
+
+    SOHO: small office/home office
+    ROMMON: ROM monitor OS
+
+COMMANDS:
+    show ip interface brief
+    show interfaces <interface type> <interface number>
+    show protocols <interface type> <interface number>      -> information about interfaces
+    show controllers <interface type> <interface number>    -> On serial interfaces list cable as either DCE or DTE
+    show version
+    copy <source> <destination>
+    show flash                                              -> lists the name and size of files in flash
+    reload                                                  -> reloads (reboots) the router (startup-config and OS)
+
+    bandwidth <kbps>                                        -> set the bandwidth for an interface
+    clock rate <bps>                                        -> set the clock rate for an interface
+    config-register <hex value>                             -> set the value of the configuration register (see below)
+    boot system <file_url:filename>                         -> Set a boot command in the startup-config specifying where the IOS to be loaded is (TFTP)
+    boot system flash <filename>                            -> Set a boot command in the startup-config specifying where the IOS to be loaded is (flash)
+    boot system rom                                         -> load the ROMMON OS
+
+RECAP:
+    Each remote site has a LAN switch connected to a router. The router connects the LAN to a WAN providing access to other remote sites
+    UTP (ethernet) cabling connects machines to a switch and a switch to a router. The router is connected to CSU/DSU through a serial cable which connects to the serial port on the router
+    A leased line (or other WAN technology) then connects the CSU/DSU at one site to the CSU/DSU at another, an RJ48 cable is used to connected the telco's leased line to the CSU/DSU
+    Most modern routers have the CSU/DSU built into their serial interface, in this case an RJ48 cable is connected to the routers Serial port instead of a serial cable
+
+INSTALLATION
+    1. connect LAN cables (ethernet, RJ45)
+    2. connected serial interface to CSU/DSU (serial cable)
+    3. connect CSU/DSU to line from telco (RJ48)
+    4. connect console port to laptop (for configuration)
+    5. connect power cable
+    6. power on the router (Note that switches don't usually have a power button and will always be on once connected to power)
+
+CABLE CONNECTION TO INTERNET
+    To connect a home or office LAN (SOHO) to the internet using cable has the high speed internet service
+    The router is connected to a cable modem with UTP (stright through) cabling the modem is then connected to the CATV cable line provided by the ISP
+    An alternative to using CATV (TV) cable is to use DSL (Telephone) which will require a DSL modem
+    Modern home routers will include all of the following as a single device 1. Router 2. Switch 3. Cable/DSL modem 4. Voice adapter 5. Wireless adapter 6. Hardware enabled encryption
+
+SIMILAR OPERATIONS ON CISCO SWITCH CLI AND CISCO ROUTER CLI
+
+    1.  Enable privileged and global configuration mode
+    2.  Configure console, Telnet and enable secret passwords
+    3.  Configure SSH keys and user/password
+    4.  Configure hostname
+    5.  Configure speed and duplex mode on Ethernet interfaces
+    6.  Configure interface descriptions
+    7.  Setting interfaces up and down (shutdown and no shutdown)
+    8.  Selecting interfaces (i.e. line console 0 and interface vlan 1)
+    9.  CLI help
+    10. startup-config, running-config and copy command
+    11. Starting set-up mode (reload router with empty startup config or use setup command)
+
+DIFFERENT OPERATIONS ON CISCO SWITCHES AND CISCO ROUTERS
+
+    1. Configuration of IP addresses
+    2. Questions asked during setup
+    3. Routers have an additional AUX port (connects to external modem) allowing remote users to connect tot eh router for configuration
+    4. show mac address-table dynamic replaced by show ip route (since routers focus on IP routes rather than mac addresses)
+
+ROUTER INTERFACES
+
+    commands to view interface informations:
+      1. show ip interface brief
+      2. show protocols <interface type> <interface number>
+      3. show interfaces <interface type> <interface number>
+
+    1. ETHERNET
+        a. 10 Mbps -> interface Ethernet 0 or 0/1 or 1/0/1 (the interface number format depends on the cisco switch)
+        b. 100 Mbps -> interface FastEthernet 0/1
+        c. 1+ Gbps -> interface GigabiteEthernet 0/1
+
+    2. SERIAL
+        Point to point (PPP), High Level Data Link (HDLC) and Frame relay both use the same layer 1 standards
+        the network engineer choose which of these link layer protocols to use on the serial interface (default HDLC)
+
+    3. AUX PORT
+        Connects to an external analog modem through a RJ45 straight through cable
+        An engineer can then use a terminal emulator to connect to and configure the router
+        The AUX port can be selected and configured with the "line aux 0" command
+
+INTERFACE STATUS CODES
+
+    Each interface will have a status of the form up/up or down/down or up/down
+      - The first status (line status) code refers to if the Layer 1 is working
+      - The second status (protocol status) code refers to if the Link Layer protocol (Layer 2) is working
+    If the first status code is down then the second will always be down since the link layer protocol can't work with out layer 1
+
+    Line status checks that a cable is installed, that it is the right cable (cross over cable) and that the device on the other end is powered on
+    protocol status will usually be down if there is a mismatch between the datalink layer configurations (i.e. spedd/duple, one router using PPP and one using HDLC)
+
+    if an interface is shutdown using the shutdown command it will be marked as administratively down/down instead of just down/down
+
+    administratively down/down    -> interface shutdown by administrator
+    down/down                     -> layer 1 is down
+    up/down                       -> link layer is down (protocol mismatch)
+    up/up                         -> all is well
+
+ROUTER INTERFACE IP ADDRESS
+
+    Routers MUST have an IP address configured on all  in use interfaces
+    If an address is not configured, even if the interface is in up/up state, the router will not attempt to send and receive packets on that interface
+
+    To configure an IP address on an interface
+        1. select the interface interface <interface type> <interface number>
+        2. ip address <address> <mask>
+
+BANDWIDTH AND CLOCK-RATE ON WAN LINKS (SERIAL INTERFACES)
+
+    WAN links can run at a wide range of speeds. to deal with this routers slave themselves to the speed dictated by the CSU/DSU (clocking)
+    The CS/DSU sends clock pulses to the router telling it when to send and receive the next bit
+    This means the routers don't need to auto-negotiate to determine the link speed
+
+    BACK-TO-BACK CONFIGURATION
+        When routers are connected back-to-back (i.e. serial concole of router one connects directly to serial console of router 2) they do not use CSU/DSU
+        instead one router provides the clocking and the other behaves as if it where connected to a CSU/DSU using the clock speed provided by the first router
+        To set the clock rate in this configuration
+            1. select the serial interface on the first router (the one connected to the DCE cable)
+            2. use the "clock rate <speed>" command to set the clocking (usually 128000 bps)
+        Note we can use the "show controllers" command to determine if the attached serial cable is a DCE or DTE
+        Cisco ISO silently rejects the clock rate commmand if the interface is connected to a DTE cable (no error is shown)
+
+    BANDWIDTH COMMAND
+        The "bandwidth" command specifies the spped of the link on a serial interface (in kbps)
+        The command does not affect the rate at which bits are sent or received on the link (clocking). instead affects the operation of routing protocols such as EIGRP and OSPF
+        For Serial links the default bandwidth is 1.544 Mbps (speed of a T1 line)
+        For Ethernet interfaces the bandwidth is equal to the speed the interface is running at (i.e. 100 Mbps for FastEthernet)
+
+SETUP MODE
+
+    - Can reach setup mode by erasing the startup config and rebooting the router or by using the "setup" command in enabled mode
+    - When completed write the setup to both the startup config  and the running config
+    - We can use ctrl-C to exit setup mode
+    - When complete we can enter (0): ignore answers (1): restart setup (2): use the setup configuartion
+    - The setup mode on a router asks different questions to that of a switch
+
+UPGRADING CISCO IOS
+
+    - The IOS image is stored in flash memory (rewritable permanent storage)
+    - To upgrade the IOS, a new IOS is copied into flash memory, the router is configured to boot with this new image and the older image is then deleted from flash memory
+        1. download the new IOS image from cisco.com
+        2. place the IOS image on a TFTP server accessible from the router
+        3. Use the "copy" command to copy the file into flash memory
+            - "copy tftp flash"
+            - you will then be prompted to enter the address of the tftp server and the name of the file on the server
+
+    - We need to reboot the router in order to use the new IOS
+        1. The router performs an power on self test (POST) to confirm the hardware is working correctly
+        2. The bootstrap program is copied from ROM to RAM
+        3. The bootstrap program picks one of the IOS images and loads it into RAM, then hands control over to the new OS
+        4. The IOS loads the startup configuration file from NVRAM to RAM as the running-config
+
+    CONFIGURATION REGISTER
+        16 bit register which specifies some low level operations of the cisco router (default value: 0x2102)
+            - 9600 baud rate of the console is set using the configuration register
+            - Also used to specify the OS which is loaded during boot
+            - config-register 0x2100 global config command causes the router to load the ROMMON OS (used to recover lost passwords, stored in ROM)
+            - The config register value does not need to be saved to the startup-config
+            - we can check the configuration register value using the "show version" command
+
+        the forth hex digit of the configuration register specifies which OS to boot
+            - 0   -> ROMMON (older cisoc routers use RxBoot)
+            - 1   -> first IOS found in flash memory
+            - 2-F -> Try each boot system commands in the startup-config in order until one works, if none work use the first IOS in flash memory
+
+        The "boot system" global configuration command is used to create boot commands in the startup-config
+            - can be used multiple times
+            - Gives details about flash memory to help locate the IOS
+
+        Note that an IOS image can be copied into flash using the ROMMON OS in case we delete all the IOS images in flash
+        ROMMON will be loaded if no other IOS can be loaded
+
+
+SHOW VERSION COMMAND:
+
+    1. The configuration register’s current and future setting (if different)
+    2. The IOS version
+    3. The uptime
+    4. The reason for the last reload of IOS
+    5. The source from which the router loaded the current IOS
+    6. The amount of RAM memory
+    7. The number and types of interfaces
+    8. The amount of NVRAM memory
+    9. The amount of Flash memory

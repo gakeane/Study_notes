@@ -1,0 +1,215 @@
+
+NOTES:
+    Note that routers used to be called gateways so in some literature router and gateway are used interchangeably
+    Note the EIGRP (and it predecessor IGRP) are the only proprietary protocol
+
+
+ABERRATIONS:
+    VLSM: Variable length subnet masking
+    ICANN: Internet Corporation for Assigned Network Numbers
+
+
+COMMANDS
+    debug ip rip                                              -> generates logs of all the RIP updates sent and received
+    service timestamps                                        -> debug log will include timestamps (global configuration command)
+    show process                                              -> show CPU utilisation
+
+    router rip                                                -> enter RIP configuration mode
+    version {1|2}                                             -> select the version of RIP to use
+    network <classful network number>                         -> specify the network RIP will be used on (can be called multiple times)
+    passive-interface <network type> < network number>        -> Disable RIP updates on an interface
+
+    ip address <address> <mask>                                                                               -> sets an IP address for an interfaces
+    ip route <network number> <network mask> <next hop router / interface> <administrative distance>          -> create a static route
+
+    show ip interface brief
+    show ip route [rip | static | connected | network address]
+    show ip protocols                                                     -> list information about RIP configuration
+
+
+HOW ROUTERS LEARN ROUTES
+    1. connected routes (C)   -> these are the networks directly connected to the router ports
+    2. static routes (S)      -> these are routes manually configured by an administrator
+    3. dynamic routes (D)     -> these are routes learned using a routing protocol
+    4. default routes (s*)    -> special static routes that are used if no other router matches the destination address
+
+
+ROUTING PROTOCOL
+    A set of algorithms used by routers to learn route dynamically
+    1. routers exchange information with each other and determine the best path to each subnet
+        a. learn routing information about subnets from neighbouring routers
+        b. advertise information about subnets to neighbouring routers
+        c. If there is more than one route to a subnet select the best one (lowest metric)
+        d. (convergence) if the network topology changes (route goes down) advertise that the route is down and select a new one
+    2. The best paths are placed in the routing table
+    3. examples: RIP, EIGRP, OSPF, BGP
+
+    Each router starts with only the connected routes
+    All routers need to participate for the routing protocol to be successful
+
+
+EXTENDED PING COMMAND
+    IN the CISCO IOS the ping command will display a '!' for a successful ping and a '.' for a failed ping'
+    The extended ping command in CISCO IOS allows the caller to change source IP address of the ICMP packet.
+    This is useful for debugging routing issues if you don't have access to one of the machines behind the router
+    Unless specified in the extended ping command the source IP address of the ping is the IP address of the interface the ping is sent out
+
+
+ROUTED/ROUTABLE PROTOCOL
+    A packet structure and logical address system which allows routers to route packets, best known example is IP
+
+
+CONNECTED ROUTES
+    Any interface which is in up/up status and has an ip address  configures will add a connected route to the routing table
+    The added route will be to the sub-network the interface is on
+
+
+STATIC ROUTES
+    To configure a static route
+        1. go to global configuration mode
+        2. Use the ip route command
+            - ip route <destination network address> <destination network netmask> <next hop router address>
+            - ip route 192.168.40.0 255.255.255.0 10.10.111.1
+
+    NOTES
+        - We may NOT specify the netmask using prefix (/) notation
+        - We can statical declare a directly connected route by specifying an interface instead of a next hop router
+            - ip route 192.168.40.0 255.255.255.0 Serial 2/0
+            - If using a PPP serial link this also works as a next hop router since there is only one device at the end of it
+        - "show ip route static" command shows only statical configured routes
+
+
+DEFAULT ROUTES
+    A route where the destination of the route matches every network address (0.0.0.0)
+    These are useful on routers which only have one interface with which to send traffic out (since everything will be going out this interface anyway)
+    To declare a default route give the network number and netmask as all zeros and specify the address of the next hop router
+        - "ip route 0.0.0.0  0.0.0.0  172.16.3.2"
+
+    Default routes appear in the routing table marked by a * i.e. S* for a statically declared default route
+    Routers without a default route discard packets which do not match any destination networks in the routing table
+
+
+GATEWAY PROTOCOLS
+
+    Routing protocols will be either IGP or EGP
+
+    (IGP) Interior Gateway protocol -> routing protocol designed for use in a single autonomous system (AS)
+    (EGP) Exterior Gateway protocol -> routing protocol designed for use across multiple autonomous system (AS)
+
+    (AS) Autonomous system -> network infrastructure under the control of a single organisation (i.e. Oracle global network)
+    (ASN) Autonomous system number -> number used to identify an autonomous system (regulated by ICANN)
+
+     - Currently (BGP) Border gateway protocol is the EGP protocol
+     - IGP protocols (OSFP, EIGRP) are used inside Autonomous system and EGP protocols (BGP) are used to connect Autonomous system
+
+
+IGP ALGORITHMS
+
+    IGP routing protocols use one of three algorithms
+
+    1. Distance vector algorithm      -> RIP-1, RIP-2, IGRP
+    2. Link-state                     -> OSPF, IS-IS
+    3. Balance hybrid                 -> EIGRP
+
+    Balanced hybrid is also called advanced distance vector
+    Each algorithm assigns a metric which signifies the goodness of the route, lower metric means better route
+
+
+    RIP-2
+        1. Router R1 learns about a connected route
+        2. Router R1 send a routing update to it's neighbours listing a subnet, mask, distance and metric for the new route it learned
+            - The metric is the number of hops required to reach the subnet (also called a distance vector)
+        3. R2 and R3 both here the routing update and add the new route to their routing tables
+        4. R2 and R3 both advertise the new route they have learned (the metric will have been increased by one)
+        5. At the end of this R2 and R3 will have learnt two paths to the network advertised by R1, they will use the path with the lower metric in their routing table
+
+        This process is repeated every 30 seconds on a periodic basis. If something changes the routers will then converge on a best working route solution
+
+        CONFIGURATIONS:
+            1. "router rip" (global configuration command, goes to protocol configuration mode)
+            2. "version 2" (tell rip to use version 2)
+            3. Use the "network <class network address>" command for each interface (WAN and LAN)
+                - i.e. for interface on class C network 199.1.1.1 -> network 199.1.1.0
+                - i.e. for interface on class B network 122.40.80.1 -> network 122.40.0.0
+                - i.e. for two class A interfaces with addresses 10.20.30.40 and 10.50.10.5 -> network 10.0.0.0 (only needs to be done once for both interfaces)
+
+            Note to disable RIP on an interface we simply don't use the network command for the classful network that interface is on
+            In the case where mulitple interfaces are on the same classful network we need to disable RIP on unwanted interfaces
+                - "passive-interface <interface type> <interface number>"
+                - i.e. passive-interface FastEthernet 0/1
+                - the router will now no longer send updates out the Fa0/1 interface
+
+            NOTE: If we don't enter a classful network (say we enter the address of the interface). IOS will automatically work out the classful address from this
+            NOTE: networks leanred with RIP will be marked with an R in the "show ip route" command
+
+    EIGRP
+        Uses a metric which considers the interface bandwidth and interface delay in a mathematical formula when determining the goodness of a route
+
+    OSFP (open Shortest Pat First)
+
+CLASSLESS AND CLASSFUL ROUTING PROTOCOLS
+
+    classless routing protocols DON'T consider the class (A, B of C) of a network when determining routing information
+    classful routing protocols DO consider the class (A, B of C) of a network when determining routing information
+
+    Classless routing protocols (RIP-2, EIGRP, OSPF, IS-IS):
+        1. support VLSM
+        2. send subnet mask in routing updates
+        3. support manual route summarization
+
+    Classful routing protocols (RIP-1) do none of these things
+
+
+SUMMARIZATION
+    The process of summarizing multiple routes as a single route
+    summarization can be done automatically (auto-summarization) or manually (manual summarization)
+
+       - auto-summarization     -> RIP-1, RIP-2, EIGRP
+       - manual summarization   -> RIP-2, EIGRP, OSPF, IS-IS
+
+CONVERGENCE
+    Convergence is the process by which routers update their routing tables whenever the network topology changes (i.e. a link or router when down, a new router we brought up)
+    Quick convergence is important as route to certain networks may disappear during the convergence process interrupting networking
+    Some algorithms converge quicker than others
+
+    RIP1 and RIP2 converge slowly
+    OSPF and IS-IS converge quickly
+    EIGRP converges very quickly
+
+
+VERIFICATION COMMANDS
+
+    1. "show ip interface brief"
+        - Interfaces must be in the up/up state before RIP will work with them
+
+    2. show ip route rip
+        - Shows all route learnt using RIP
+
+    3. show ip protocols
+        - shows information about the RIP configuration
+
+
+ADMINISTRATIVE DISTANCE (AD)
+
+    Often a router will use multiple routing protocols to learn routes. In this case the metrics of the different routing protocols won't help choose between
+    two route to the same subnet. Instead IOS assigns an administrative distance to each protocol (and therefore each route learned by that protocol).
+    The route with the lowest administrative distance is the one that is chosen
+
+        - EIGRP defaults to an administrative distance of 90
+        - RIP (V1 and V2) defaults to an administrative distance of 120
+
+        connected routes  -> 0
+        static routes     -> 1
+        IGRP              -> 100
+        OSPF              -> 110
+        IS-IS             -> 115
+
+    This means that route learnt by EIGRP will be chossen over those learnt by RIP
+    The administrative distance is show in the "show ip route" command for routes learnt by a routing protocol
+
+
+BACKUP STATIC ROUTES
+    static routes by default have an AD that is better than all protocols so will always be chosen over dynamically learnt routes
+    A backup static route has a higher AD so it will only be used if the routing protocol fails to find a route to the desired subnet
+        - We can create a backup static route using the command "ip route <network number> <network mask> <next hop router address> <administrative distance>"
+        - ip route 10.1.1.0 255.255.255.0 10.2.2.2 150 -> has an administrative distance of 150

@@ -1,0 +1,176 @@
+
+ABBREVIATIONS
+
+    POST:       Power on self test
+
+COMMANDS
+    enable:                                 access enabled mode
+    configure terminal:                     access global configuration mode
+
+    reload:                                 reboot the switch. Loads startup-config into RAM as running-config
+    show process:                           Show the switches CPU utilization
+    hostname <hostname>:                    Set the hostname on the switch
+    banner motd <~message~>:                Set a message of the day banner when a user logs into the switch
+    banner login <~message~>                Same as above
+
+    exit:                                   Brings you down one level
+    end:                                    Return to enabled mode
+    Ctrl-z:                                 Return to enabled mode
+    quit:                                   Exits the user from the CLI session
+
+    enable secret <password>                Sets a password for entering enabled mode
+    no ip domain-lookup:                    Stops switch from checking for a domain when it receives a command it doesn't recognise
+    service password-encryption:            Encrypts passwords in the running-config and startup-config files
+    show nvram                              Same as show startup-config
+
+    erase nvram:                            Erases the startup-config in NVRAM (will allow access to setup mode)
+    setup                                   Enter setup mode
+
+
+
+DEFINITIONS:
+    Internetwork Operation System (IOS)     -> common operating system on Cisco devices
+    Catalyst operation System (Cat OS)      -> Legacy Operating system
+
+
+STARTING A SWITCH
+    Switches can be used as soon as they are plugged in
+        - Generally they have no power button
+        - Generally all interfaces are enabled and in VLAN 1 by default
+
+
+SWITCH INTERFACES
+
+    FastEthernet 0/4        10/100 interface
+    GigabitEthernet 0/8     10/10/1000 interface
+
+
+SWITCH LEDs
+
+    There are 5 system LEDs and one LED associated to each port
+
+    1. SYST (system):
+          OFF:          Switch is not powered on
+          ON(GREEN):    Switch is powered on an working
+          ON(AMBER):    Switch is powered on but failed to load IOS (Filed POST)
+
+    2. RPS (Redundant power supply):         Shows the status of the second power supply
+
+    3. STAT (Status):
+          If green implies that each port LED shows the ports status
+                OFF:                  The link is not working
+                ON(SOLID GREEN):      The Link is working but there is no traffic currently over it
+                ON(FLASHING GREEN):   The link is working and there is traffic over it
+                ON(FLASHING AMBER):   The interface is administratively or dynamically (i.e. STP) disabled
+
+    4. DUPLX (duplex):
+          If green implies that each port LED shows the ports duplex status
+                OFF:  Half Duplex
+                ON:   Full Duplex
+
+    5. SPEED:
+          if GREEN implies that each port LED shows the ports speed
+                OFF:            10 Mbps
+                ON(SOLID):      100 Mbps
+                ON(FLASHING):   1000 Mbps
+
+
+CONFIGURATION MODES
+    User Mode:                            lowest mode, allows some show commands, entrance point for all login methods
+    Enabled Mode:                         Privileged mode, allows user to make changes and reboot the switch. May require a password to access
+    Global Configuration Mode:            Make changes which affect all aspects of a switch (i.e. update mac address table)
+    Interface Configuration Mode:         Make changes which affect a single interface (i.e. configure speed of an interface)
+
+
+CLI ACCESS FROM THE CONSOLE
+    Allows access to the switch even if the switch has not been connected to a network yet
+    Uses a special port (RJ-45) on the switch
+    We connect to the console port using a UTP rollover cable (pin1 to pin8, pin2 to pin7 etc)
+    The PC accesses the switch connects to it through a terminal emulator program
+
+        9600 bit/second
+        8 bit ASCII
+        1 stop bit
+        No parity bit
+        No hardware flow control
+
+CLI ACCESS FROM TELNET AND SSH
+    Also requires a terminal emulator program running on the connecting PC
+    Connects to the switch using the switch's IP address (TCP based application)
+    The switch's IP address is configured on a VLAN. Any interfaces on that VLAN can then be reached using that IP address
+
+    Operates on port 23
+    All data including the username and login password are sent in clear text
+
+    SSH is the same as telnet except all data in encrypted
+    REQUIRES USERNAME AND PASSWORD CONFIGURED ON THE SWITCH
+    "login local"                         On vty interface
+    "transport input {all | ssh}"         On vty interface
+    Operates on port 22
+
+
+PASSWORD SECURITY
+    The virtual terminals are used fro connections through telnet and SSH
+    Configuring SSH requires additional steps such as a username
+
+    "line console 0"                -> configure console (from global config mode)
+    "line vty 0 15"                 -> configure virtual terminals 0 to 15 (from global config mode)
+
+    "password <password>"           -> set the password for the console or virtual terminal (from console / vty config mode)
+    "login"                         -> Enable login on the interface (user must enter password to connect through this interface)
+
+    "enable secret <password>"      -> Set a password for entering enabled mode
+        NOTE: If a password (secret or password) is set for enabled mode Telnet and SSH will be prevent from reaching enabled mode
+        we can still access enabled mode through the console though
+
+
+HELP AND DEBUG
+    The '?' is used to show a list of possible commands and command completions as well as a description of what does commands do
+
+    The 'debug' command continues to monitor processes on the switch and then send messages to the user when events occur
+    The debug command requires more of the switches CPU
+    The debug command displays the messages as log messages
+    Any user can view the log messages of a debug process with the "terminal monitor" command
+    The log messages also get displayed to the console automatically (Anyone logged into the console will see all debug messages)
+
+    The debug command continues until the switch is reloaded or the same command is entered prefixed with "no"
+        i.e. "debug spanning-tree" is disabled with "no debug spanning-tree" or "no debug all"
+
+
+CONFIGURATION MODE
+    Changes made in configuration mode update the active running config (in RAM) and occur immediately
+
+    "configure terminal"                                -> enter global configuration mode
+    "interface <interface type> <interface number>"     -> configure a specific interface (i.e. interface FastEthernet 0/3)
+
+
+STORING SWITCH CONFIGURATION FILES
+
+    RAM/DRAM:           Dynamic memory, loses its configuration when powered off, stores running-config
+    ROM:                Read only memory, stores bootstrap program (load IOS from flash memory to RAM), Can't be written to
+    Flash Memory:       Permanent storage (usually a chip). stores the Cisco IOS
+    NVRAM:              Non-volatile RAM. Permanent storage. Stores the start-up configuration file
+
+    "show startup-config"                     -> shows the start-up config
+    "show running-config"                     -> shows the running config
+
+    "copy running-config startup-config"      -> overwrites the startup config in NVRAM with the running config
+
+    Note: The coppy command can also be used to copy files to and from a TFTP server
+        - "copy running-config tftp"
+        - You will then be prompted for the address of the tftp and the name of the file
+    Note: When copying a file into RAM the running config is not replaced, instead the commands in the copied file are executed as if they had been entered into the CLI
+
+
+SETUP MODE
+    setup mode can be entered when the switch boots with no startup-config file in NVRAM (i.e. it was erased with "erase nvram")
+    Can also be entered with the "setup" command
+
+    When completed the results of setup mode are copied to NVRAM and RAM (replace the startup-config and running-config)
+    we will be asked if we want to proceded with writing results of setup mode to memory
+
+        0:  Don't save this setup configuarion
+        1   Restart setup mode
+        2   Save this setup configuration to startup-config and running-config
+
+    Ctrl-C quits setup mode and nothing is written into memory

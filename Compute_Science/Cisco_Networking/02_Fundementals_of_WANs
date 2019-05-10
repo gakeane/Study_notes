@@ -1,0 +1,110 @@
+
+ABBREVISATIONS
+    PTT:        Public Telephone Company
+    CO:         Central Office
+    CSU:        Channel Service Unit
+    DSU:        Data Service Unit             (Note: DSU and CSU are the same thing)
+    CPE:        Customer Premise Equipment    (i.e. CSU and router)
+
+    DTE:        Data Terminal Equipment
+    DCE:        Data Communications Equipment
+
+    PCM:        Pulse Code Modulation         (convert analogue signal to digital)
+    ATM:        Asynchronous Transfer Mode    (Alternative to Frame Relay)
+    VC:         Virtual Circuit               (path a frame travels in a frame relay network)
+    CIR:        Committed Information Rate    (Guaranteed data transfer rate over a VC)
+
+DEFINITIONS
+    Leased Line:                  Line owned by a telco which is rented to a company to send data over between two sites
+    Point-to-Point:               Single line providing direct connection between two other sites. No other devices are connected to the line
+    Four wire leased circuit:     Leased line using two twisted pairs
+    Demarc:                       Where responsibility for devices transfers from the Company to the Telco (generally on Telco side of CSU/DSU)
+
+
+NOTE: Switches generally only have Ethernet ports. Connecting to WANs generally involves going through a router
+
+
+WAN DEVICES
+    Routers connect to CSU/DSU (This connection is within the company office)
+    The CSU/DSU then connects to a WAN switch (Through the four wire leased line from the Telco)
+    This goes over the point-to-point leased line and to a WAN switch at the other side
+
+    CABLING
+        The connection to the CSU/DSU typically uses an RJ-48 connector
+        Many routers have an integrated CSU/DSU, in this case the RJ-48 leased line is connected directly to the router
+
+
+CLOCK RATES (DCE AND DTE)
+    When purchasing a leased line from a Telco the company needs to specify how fast the line will be in kbps
+    The CSU/DSU at each end of the line must be configured to run at the leased line's speed
+
+    Synchronization occurs between the twos CSU/DSUs by having one CSU/DSU be a slave and match it's clock rate to the other, master CSU/DSU
+    The CSU/DSU synchronise their clocks several times a second
+
+    In practice the leased line provides clock information to the CSU/DSUs by transition in the electrical signal
+    The CSU/DSUs then match their clocks to this rate
+    The CSU/DSUs send the clocking information to the router so it knows how quickly to send the data
+
+        - The router is the DTE (data terminal equipment)
+        - The CSU/DSU is the DCE (data communications equipment)
+
+    Cisco provides both DTE and DCE cables
+          - DTE cable if router is acting as a DTE device (Most common on real world WAN links)
+          - DCE cable if router is acting as a CDE device (needed for one router when not using CSU/DSUs)
+
+    We can build a WAN link without CSU/DSUs. In this case one router provides clocking (DCE + DCE cable) and one receives clock (DTE + DTE cable)
+        - The two cables can be connected together (male and female connector)
+        - set clocking on a router with the clock rate command
+        - DCE cable swaps the receive and transmit ping (like a crossover cable)
+
+
+WAN SPEEDS
+    PCM for voice is 8000 8 bit samples (64 kbits). This was the speed of the first digital lines provided by telcos (DS0)
+    Faster lines use multiples of these base lines (i.e. DS1 uses 24 DS0s)
+
+    DS0         64 kbps                             America
+    DS1         1.544 Mbps          24 DS0s         America
+    DS3         44.736 Mbps         28 DS1s         America
+    E1          2.048 Mbps          32 DS0s         Europe
+    E3          34.368 Mbps         16 E1s          Europe
+
+
+POINT-TO-POINT PROTOCOLS
+
+    HDLC
+        - Determine if any errors occurred in transmission (error frames are dropped)
+        - Determine the type of packet contained in the frame
+
+        HEADER CONTAINS
+            1 byte Flags
+            1 byte Address                    Not really necessary since there is only one other device on the line
+            1 byte Control
+            2 byte Type (Cisco Propriety)     Identifies type of packet contained in the frame
+
+        TRAILER CONTAINS
+            4 byte checksum (FCS)
+
+    POINT-TO-POINT PROTOCOL (PPP)
+        - Same as HDLC except includes the 2 byte type field in the header as standard
+        - Most popular protocol over point-to-point line
+
+
+PACKET SWITCHING SERVICE
+    Allows multiple routers to all be connected to eachother
+    There is only a single serial link into each router connecting it to the packet switching service
+
+    FRAME RELAY
+        The routers connect directly to a frame relay switch located at the telco
+            - The router is still the DTE device
+            - The frame relay switch is now the DCE device
+            - Note there are still CSU/DSUs which provide clocking to the router (these are also DCE devices)
+
+        Data Link Connection Identifier (DLCI)
+            - Address mechanism for frame relay frames (contained in the header)
+            - The WAN switch forwards the frame based on the DLCI
+            - Address are between 1 and 1023
+
+        Virtual Circuit (VC)
+            - The path a frame travels between two routers in a frame relay network
+            - These are usually configured by the Telco (Permanent VC (PVC))
+            - The VC acts as a point-to-point link between two routers (DTEs)

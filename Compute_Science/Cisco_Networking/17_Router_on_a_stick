@@ -1,0 +1,20 @@
+Also known as inter VLAN routing
+
+CONCEPT:
+    PCs in different VLANs connect to a switch which connects to a router
+    The PCs will be in different subnets since they are in different VLANs
+    The router interface can only be in one of these subnets
+
+    1. On the switch configure a trunk link between the switch and the router
+          - Go to interface which will be a trunk                     "Interface FastEthernet 0/1"
+          - Specify encapsulation protocol on that interface          "switchport trunk encapsulate dot1q"        (802.3q is the trunking protocol)
+          - Set the interface as a trunk                              "switchport mode trunk"
+
+    2. On the router create sub interfaces for each VLAN
+          - Go to the interface connected to the switch               "interface FastEthernet 0/1"
+          - Enable the interface                                      "no shut"
+          - Configure a management IP address                         "ip address 192.168.1.1 255.255.255.0"
+
+          - For each vlan create a sub-interface on the router        "interface FastEthernet 0/1.10"           (i.e. for VLAN 10)
+          - Specify the encapsulation protocol on the interface       "encapsulation dot1q 10"                  (10 for VLAN 10)
+          - Give the interface an IP address                          "ip address 192.168.10.1 255.255.255.0"

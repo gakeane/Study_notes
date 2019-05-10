@@ -1,0 +1,120 @@
+
+ABBREVIATIONS
+    CDP:            Cisco Discovery Protocol
+    CRC:            Cyclic Redundancy Check
+    FCS:            Frame Check Sequence
+
+
+CISCO DISCOVERY PROTOCOL (CDP)
+    Proprietary protocol on cisco devices allows them to discover basic information about other Cisco devices attached to them
+    Routers and switches send out CDP messages announcing information about themselves. Other routers and switches can then listen for these messages
+
+    THINGS THAT CAN BE LEARNED
+        1. Device Identifier                      the hostname of the neighbour device
+        2. Address List                           The Network and data-link (MAC) address of the neighbour device
+        3. Local Interface                        The interface on the local device that received the CDP message from a neighbour
+        4. Port Identifier                        Port used by neighbouring device to send CDP messages to the local device
+        5. Capabilities List                      device type (i.e. switch, router)
+        6. Platform                               model and OS of the running device
+
+    The "show cdp" command is used to display the contents of CDP packets received from neighbouring devices
+        1. "show cdp neighbours"                                              Lists summary line of information for each neightbour
+        2. "show cdp neighbours detail"                                       Large amount of information (15 lines) about each neighbour
+        3. "show cdp neighbours <interface type> <interface number>"          Lists a summary line about neighbours connected to a specific interface
+        4. "show cdp entry <name>"                                            Lists detailed information for a named (hostname) neighbour
+
+    It is recommended that CDP be disabled as it provides a security risk
+        - disabled per interface using the "no cdp enable" interface command
+        - Globally disable with "no cdp run" global configuration command
+
+    The following commands give information about the CDP protocol running on the switch
+        1. "show cdp"
+        2. "show cdp interfaces"
+        3. "show cdp traffic"
+
+    CDP advertisements are sent out every 60 seconds
+    CDP advertisements are held for 180 seconds
+
+    LLDP (Link layer discovery protocol) is an IEEE implementation of CDP
+
+
+INTERFACE STATUS CODES
+    The "show interfaces" and "show interfaces description" commands can be used to show the status codes of an interface
+    The two status codes are line status and protocol status
+        line status:        Is layer 1 working
+        protocol status:    Is layer 2 working
+
+    "clear counters interface fastEthernet 0/1" can be used to clear the errors counters on an interface
+    The "show interface status" command shows a different status, but which corresponds to the combined state of the line status and the protocol status
+
+        disabled:         down/down (administratively down)                     "shutdown" used on interface
+        notconnect:       down/down                                             Layer 1 not working (i.e. wrong/missing cable, speed mismatch, other device is off)
+        notconnect:       up/down                                               Layer 2 not working (very rare)
+        err-disabled      down/down (switchport security violation)             Interface shutdown due to port security violation
+        connect           up/up                                                 interface is working
+
+
+SPEED AND DUPLEX ISSUES
+    The "speed" command can be used to manually set the speed of an interface
+    The "duplex" command can be used to manually set an interface to full or half duplex
+    NOTE: Setting both the speed and duplex setting on an interface will disable auto-negotiation for that interface (ONLY IF BOTH SET)
+            - Other devices (switches) will not be able to determine the spped/duplex setting of the interface through auto-negotiate
+            - "show interface status" command shows if speed and duplex setting were learned with auto-negotiation by prefixing them with an 'a-'
+            - The show interfaces command does not indicate how speed and duplex settings were learned
+
+    With auto-negotiation both devices agree to the fastest speed (and duplex mode) supported by both devices
+    The following rules are used when connecting to a device which has auto-negotiate disabled
+        1. If speed is unknown use 10 Mbps, half duplex
+        2. If speed is known to be 10 Mbps or 100 Mbps use half duplex
+        3. If speed is known to be 1000 Mbps use full duplex
+
+    A switch will know the speed of an interface it's connecting to if it's speed setting (on the local switch) was manually configured
+    Cisco switches can also sense the speed of connected devices due to the electrical signals on the line
+
+    In the case of a duplex mismatch the link still works (up/up) but performance will be poor
+        - This is because devices operating in half duplex mode use CSMA/CD and will wait to send while receiving a frame from the full-duplex device
+        - The device in full duplex mode will not wait thus causing the device in half-duplex mode to perceive errors
+
+    High collisions indicates both sides are using half duplex
+    High late collision count indicates there is a duplex mismatch
+    If there are no collisions and the interface is down it is likely a wiring issue
+
+PROBLEMS ON INTERFACES IN UP/UP STATE
+
+    CRC CHECK
+        Even when an interface is in up/up state there can be problems sending packets
+        This could occur due to a damaged cabled or electromagnetic interference causing bits to flip in transit
+        This causes the CRC/FCS to be incorrect and the frame is dropped
+
+            "show interfaces" command tracks how many packets have been dropped due to a CRC error on each interface and the number of late collisions
+
+    COLLISIONS
+        When in half duplex mode collision normally do occur, however if everything is operating correctly collisions should be detected within the first 64 bytes of transmission
+        A late collision is one that occurs after this and indicates that one of the devices is not obeying CSMA/CD
+
+    COMMON LAN PROBLEMS
+        1. Interference on a cable              CRC error count increases but not collisions
+        2. Duplex mismatch                      Late collision count grows large
+        3. Jabber                               When an interface ignores Ethernet rules and keeps sending out frames
+
+    NOTE: Late collisions can also mean that the length of Ethernet cable used is too long
+    NOTE: Large number of collisions can also indicate a DoS attack
+
+
+FRAME PATHS
+
+    "show mac address-table"                displays all entries in the mac address table
+    "show mac address-table dynamic"        displays all dynamically learned mac addresses
+
+    Some entries in the mac-address table list the outgoing port as 'CPU'. Frames from these mac addresses are sent to the switches CPU
+
+    A switch will only send frames out interfaces in the same VLAN (and trunk links) as the interface the frame arrived on.
+    You will need to use "show vlan brief" to check which VLAN different interfaces are on
+
+
+PORT SECURITY AND FILTERING
+
+    Switches have ACLs (access control lists) which filter incoming frames based on some filter rule (These are not covered here)
+    Frames can also be filtered if they violate port security
+
+    "switchport port-security mac-address 0050.3e8d.6400"       Configure an interface to only except frames with the source address 0050.3e8d.6400

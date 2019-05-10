@@ -1,0 +1,205 @@
+
+ABBRIVIATIONS
+    TCP:              Transmission Control Protocol
+    UDP:              User Datagram Protocol
+    WWW (80):         World Wide Web
+    SNMP (25):        Simple Network Management Protocol
+    TFTP (69):        Trivial File Transfer Protocol
+    SMTP (161):       Simple Mail Transfer Protocol
+    QoS:              Quality of Service
+    URL:              Universal Resource locator
+
+DEFINITIONS
+    WWW:        Used by web browsers to access content on web servers
+    DNS (53):   Resolves a hostname to an IP address
+    SNMP:       Query, store and display information about a network (application layer)
+    TFTP:       Used to transfer files between two machines (simpler then FTP (20))
+
+    DHCP, TFTP, DNS and SNMP use UDP, other well known applications use TCP
+
+COMMANDS
+
+
+TRANSMISSION CONTROL PROTOCOL (TCP)
+    Most common layer 4 protocol (RCF 793)
+    Much more reliable protocol than UDP
+
+        1. Error recovery               (retransmission of lost packets, uses sequence numbers and acknowledgements)
+        2. Flow Control                 (Helps avoid congestion on the network, uses windowing to protect buffer space)
+        3. Multiplexing using ports     (Allows receiving host to choose correct application data is destined for based on port number)
+        4. Connection Establishment     (Handshake to start a communication session)
+        5. Ordered Data transfer        (Received bytes will be in the same order they were sent in)
+
+    TCP HEADER
+        2 bytes:    source port
+        2 bytes:    destination port
+        4 bytes:    Sequence number
+        4 bytes:    Acknowledgement number
+        2 bytes:    Window size
+        2 bytes:    Checksum
+        6 bits:     TCP flags
+
+
+USER DATAGRAM PROTOCOL (UDP)
+    less common layer 4 protocol
+    Faster protocol than TCP
+        - VoIP and video over IP don't require error recovery so UDP suits them better
+
+        1. No Error recovery
+        2. No Flow Control
+        3. No Connection Establishment
+        4. No Ordered Data Transfer
+        5. Multiplexing using Ports
+
+    NOTE: UTP does not segment data into the correct size for transmission (needs to be handled by application layer)
+    VoIP uses UDP since by the time a segment is recovered the conversation has progressed (UDP is used for real time transfers)
+    UDP applications are not slowed waiting for acknowledgements
+
+
+PORT MULTIPLEXING
+    Relies on a concept called a socket which has:
+        1. An IP address
+        2. A Transport protocol (i.e. TCP)
+        3. A port number
+
+    Ports 1-1024 are reserved for well known applications
+    Usually client dynamically assign a port number greater than 1024
+    The destination port indicates which application receives the data contained in the segment
+    The server then reply's with its own segment using the source port of the received segment as the destination port
+
+    The same concepts allied to both UDP and TCP
+
+ERROR RECOVERY
+    The sending machine provides a sequence number in the header of each segment
+    This sequence number marks the first byte in the segment
+        - (i.e. The first segment would have sequence number 0, the second sequence number 1000. the third, sequence number 2000)
+    The receiving machine reply's with an acknowledgement in the header for each segment received
+    The acknowledgement number represents the next byte in the sequence to be received
+        - (i.e. an acknowledgement of 4000 means the receiving machine has received 3,999 bytes and is ready for the segment with sequence number 4,000)
+    The sending machine sets a timer for each segment sent. If an acknowledgement for that sequence is not received in time then the segment is resent
+
+FLOW CONTROL
+    The window field implies the maximum number of unacknowledged bytes that can be sent
+    The window starts small and grows until errors occur
+        Dynamic window - The size of the window changes over time (also called a sliding window)
+    When the window is full the sender does not send. Controls the flow of data
+    Once an acknowledgement is received a new window starts from that acknowledgement number
+    Both sides of the communication will maintain their own windows
+
+    IMPORTANT: Initial Window size is agreed upon during the 3 way handshake
+
+CONNECTION ESTABLISHMENT AND TERMINATION
+    TCP uses a three way handshake to establish a connection between two machines
+        1. Client machine sends SYN (sequence number), destination port and source port
+        2. Server replies with ACK (acknowledgement of sequence number received) and it's own SYN (sequence number), plus the source and destination port
+        3. Client responds with an ACK (acknowledgement of the sequence number sent b the server)
+
+    Now both the client and server have agreed on sequence numbers and can communicate
+    2 bits in the TCP header (flags field) represent the SYN and ACK messages
+        - If these bits are not set the sequence number or acknowledgement number will be ignored
+        - The ACK is not set in the first segment since the sequence number has not been initialized yet
+
+    Connection termination uses the same three way handshake but sets the FIN flag instead of the SYN flags
+    These FIN segments must also be acknowledged so that both machines know the connection has been terminated
+
+    Connection oriented protocol:   TCP
+    Connectionless protocol:        UDP
+
+ORDER DATA TRANSFER
+    MTU (Maximum transmission unit)
+        - 1500 bytes for Ethernet
+        - Payload of TCP is 1460 since IP and TCP headers are 20 bytes each
+
+    The TCP assembler reorders packets which arrive out of sequence due to retransmissions
+        - This is done based on the sequence number
+
+
+Quality of Service (QoS)
+    modern networks need much more bandwidth with less delay
+
+    REASONS FOR INCREASED NETWORK DEMAND
+        - File Transfers (large data transfers over a long period of time)
+        - Databases (Increase user demand for data)
+        - Email
+        - Internet
+
+    VoIP
+        Sends voice data (converted to a digital signal) over a network in IP packets
+
+        REQUIREMENTS:
+            - Small bandwidth     (about 30 kbps)
+            - Low Delay           (less than 200 milliseconds)
+            - Low Jitter          (Jitter is the variation in delay, should not be more than 30 milliseconds, voice sounds jumpy)
+            - Low data loss       (Since data is not recovered, break in conversation)
+
+      Video over IP is the same as voice over IP but requires very high bandwidth
+
+WEBSERVERS
+    https://www.cisco.com/the/webpage/path
+        - https://              protocol used to connect to the web server (http, https, ftp)
+        - www.cisco.com/        webserver hostname or IP address
+        - the/webpase/path      Location of the webpage on the web server
+
+HTTP (HYPER TEXT TRANSFER PROTOCOL)
+    When a web browser loads a web page it first loads the requested page
+        - That page may contain references to images or video
+        - The Web browser (client) then sends GET requests for these objects aswell
+
+
+NETWORK SECURITY
+
+    TYPES OF ATTACK
+        1. Denial of Server (DoS)
+                - destroyers:       Erase data and software
+                - crashers:         Cause hosts and switches to fail
+                - flooders:         Flood network with packets to make network unusable
+
+        2. Reconnaissance Attacks
+                - Tries to discover information about a network (such as IP addresses)
+
+        3. Access Attacks
+                - An attempt to steal data
+
+        A virus is a program that is transferred onto a target computer (i.e. through an email or download) designed to carry out one of these attacks
+        Anti-virus software scans a computer for known viruses (continuously downloads the latest virus signatures)
+
+    METHODS OF ATTACK
+        1. Access from wireless LAN       User outside the building can access the network
+        2. Infected mobile/laptop         laptop becomes infected while at home and is then connected to network
+        3. Disgruntled employees          Steal information onto a USB
+
+    ATTACK TOOLS
+        1. Scanner              Send requests to TCP and UDP ports (NMAP)
+        2. Spyware              Virus that tracks what the user does and passes the information back to the attacker through the internet
+        3. Worm                 Self replicating program. Usually perform DoS attacks
+        4. Keystroke Logger     Logs all keystroke a user makes to capture passwords
+        5. Phishing             Attacker sets up a site that looks like a legitimate site
+        6. Malware              Board term for viruses and spyware
+
+    DEMILITARIZED ZONE (DMZ)
+        Place for hosts inside the enterprise network that require access from the internet
+        Keeps them separate from the rest of the enterprise network though a firewall
+
+    FIREWALL
+        Sits between a network and the internet
+        Stops unwanted packets from entering the network from the Internet
+        Uses the transport layer port number and the application layer header to detect unwanted packets
+        Disallows all traffic except what the engineer has allowed ('opening a hole' in the firewall)
+
+        Needs to know which interfaces are connected to the inside, outside and DMZ
+
+    NETWORK ADMISSION CONTROL (NAC)
+        Requires a user to supply and username and password before connecting to the LAN
+        Requires that any connecting device have up to date antivirus software
+
+    INTRUSTON DETECTION AND PREVENTION (IDS and IPS)
+        Looks for trends to detect certain types of Attacks
+            - i.e. a file being sent to many different hosts may suggest a worm copying itself
+
+    VIRTUAL PRIVATE NETWORKS (VPNs)
+        Send connections through the internet using a secure channel
+            - Authenticate on both ends of the VPN so both client and server are sure who they are communicating with
+            - Encrypt the original IP packets (end to end)
+
+        Access VPN:           Home office laptop connecting to enterprise network
+        site-to-site VPN:     Branch office connecting to main office

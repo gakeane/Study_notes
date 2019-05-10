@@ -1,0 +1,8 @@
+
+On Site
+IaaS:       Infrastructure as a service         Provides a virtualisation environment on which users install OS (Provides hardware on which OS can be installed
+                                                                                                                 Provider maintains the hardware i.e. OCI)
+PaaS:       Platform as a service               Provides hardware and software tools required for application development (Users can install their own applications
+                                                                                                                           The application environment is managed by the provider)
+SaaS:       Software as a service               Provides a software service, i.e. testlink, netflix (provides an application which is managed by the provider)
+BaaS:       Back-end as a service

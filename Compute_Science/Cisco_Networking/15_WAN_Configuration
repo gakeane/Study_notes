@@ -1,0 +1,97 @@
+
+NOTES
+    Cisco routers default to using Ethernet as the layer 2 protocol
+
+CONFIGURING HDLC
+
+    IOS defaults to use HDLC as the encapsulation protocol on serial links
+
+          MANDATORY
+      1. "ip address <address> <mask>" on interface
+
+          CONDITIONAL
+      2. "no shutdown" on interface                           Only if the interface is administratively down
+      3. "encapsulation hdlc"                                 Only if another encapsulation protocol is in use
+      4. "clock rate <speed in bps>"                          Only if the routers are back to back and only on the DCE router (otherwise clock is done by CSU/DSU)
+            - "show controllers serial 0/1"       Shows if a serial interface is acting as a DCE or DTE
+            - "show interfaces serial 0/1"        Shows what encapsulation protocol the interface is running
+
+          OPTIONAL
+      5. "bandwidth <speed in kbps>"
+      6. "description <message>"
+
+CONFIGURING PPP
+    This is the same as configuring HDLC but we must declare that we are using PPP on BOTH routers
+        "encapsulation ppp" on interface
+
+
+SECURITY DEVICE MANAGER (SDM)
+    Web service run on the router allowing configuration through a web browser (Router must have an IP address for the web server)
+    Does not use SSH or Telnet
+    There is an alternative called Cisco device manager (CDM)
+
+        - When you select finish on a wizard all the commands are run on the router
+        - This is saved the the running-config but not the startup-config
+        - We can do a "copy running-config startup-config" by clicking the save button at the top tab
+
+
+ACCESS ROUTER CONFIGURATION STEPS
+
+    1. Configure the local LAN router interface with an IP address
+          - Generally we use the 192.168.4.0/24 private network
+
+    2. Install SDM on the router
+          - There are some additional steps not covered in the exam for enabling SDM
+
+    3. Connect to SDM on the router using a PC on the local LAN
+          - There are some additional steps not covered in the exam for enabling SDM
+
+    4. Configure PAT on the router using SDM
+          - see next step
+
+    5. Configure DHCP client on the internet facing interface
+          5a. configure -> interfaces and connections -> Create new connection                                  Will now configure one of the interfaces
+                  - By default an interface with no IP address configured is selected to be a DHCP client
+          5b. check Dynamic (DHCP client) radial button
+          5c. check enable PAT radial button
+                  - Ensure that the interface to be translated is the local LAN interface
+
+    6. Configure DHCP server on the LAN facing interface
+          6a. Choose a subnet for the private IP network (i.e. 192.168.4.0/24)
+          6b. Choose a range of IP address that can be assigned by DHCP
+                - This must be in the range of the private network
+                - We should not allow the IP address of the router (local interface) to be assigned by the DHCP server
+                - i.e 192.168.4.101  ->  192.168.4.254
+                - i.e 192.168.4.1   ->   192.168.4.100 will be left for static address
+          6c. The router's local interface will be the default gateway assigned by the DHCP server
+          6d. Use the "show dhcp server" command to get the IP address of the DNS server assigned by the ISP
+                - This will be the same DNS server assigned to all hosts on the private network
+                - This will also show the DNS domain name
+
+          6e. Configure using SDM
+                - Configure -> additional tasks -> DHCP pools -> add
+                - Enter:
+                      - network + subnet mask
+                      - Starting and ending IP address range (for assignment)
+                      - DNS server IP address
+                      - Domain name
+                      - Default gateway
+
+
+TROUBLESHOOTING COMMANDS
+    1. "show ip dhcp binding"                       Shows the IP address and MAC address of hosts which where assigned an IP address through DHCP
+    2. "show ip nat translations"                   shows the current NAT translation table
+    3. "clear ip nat translations *"                clears the NAT translation table
+
+
+DHCP CLI CONFIGURATION
+    Start in global config mode
+
+    "ip dhcp exclude-address 192.168.4.1 192.168.4.10"
+    "ip dhcp pool Pool_Name"
+    "network 192.168.4.0 255.255.255.0"
+    "default router 192.168.4.1"
+    "dns-server 8.8.8.8"
+
+    use "show ip dhcp binding" to check what addresses DHCP has been assigned to is working
+    To configure an interface using dhcp us "ip address dhcp"

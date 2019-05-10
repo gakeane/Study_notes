@@ -1,0 +1,161 @@
+
+ABBREVIATIONS
+
+    HDLC: High Level Data Link Control
+    PPP:  Point to Point Protocol
+    PSTN: Public Switched Telephone Network
+
+    VCI:  Virtual channel Identifier
+    VPI:  Virtual Path Identifier
+    DLCI: Data link connection identifier
+
+DEFINITIIONS
+    Local Loop:         This is the line that connects a modem to the telco (i.e. a telephone line)
+    Metro E:            Using Ethernet as a WAN technology
+
+WAN TECHNOLOGIES
+
+    1. leased lines -> HDLC (High Level Data Link Control) or PPP (Point to Point Protocol)
+    2. Frame relay
+
+
+PUBLIC SWITCHED TELEPHONE NETWORK (PSTN)
+
+    This refers to the equipment and devices ALL telcos (telephone company) use to connect any two phones in the world
+    Modems and DSL use this network to access the internet
+
+ANALOGUE MODEMS
+    Allows computers to send and receive data (stream of bits) over the electrical circuit used by two phones
+    Can be used anywhere a phone line is installed
+    Modem - modulation and demodulation
+        Modulation:     Change a string of bits into an electrical signal that's sent to the PSTN
+        Demodulation:   Change an electrical signal from the PSTN to a string of bits (by sampling it every 1/9600 seconds as either a 0 or 1)
+
+    The user has a modem connected to their PC (either internal or external modem)
+    The telco has a large bank of modems which the user connects to by dialling the phone number for them (dial-up modem)
+
+    A connection between two modems is like a leased line
+    Modems use asynchronous clocking (They don't adjust their clock to match the speed of the modem at the other end of the line)
+
+    ADVANTAGES
+        - No limit on distance
+        - No loss of through put due to high loads from other users
+
+    PROBLEMS
+        - Slow: Maximum bit rate roughly 100 kbps
+        - Can't talk on the phone and use the modem for connection at the same time
+
+
+DIGITAL SUBSCRIBER LINE (DSL)
+    1. Allows analogue voice and digital data to be sent over the same physical wiring at the same time
+        - Phone:  frequencies less than 4000 Hz
+        - DSl:    frequencies greater than 4000 Hz
+    2. The wiring is connected to a DSL access multiplexer (DSLAM) at the CO, instead of a traditional voice switch
+        - This separates the Analogue voice traffic and the IP traffic
+    3. DSL is always on. i.e. you don't have to dial a modem at the ISP to get connection
+    4. Connects to telco/ISP via standard telephone cable through a DSL modem (RJ-11)
+
+    Generally you pay an ISP a monthly few for DSL access and the ISP works with the telco
+        - The Telco owns the DLSAM (multiplexer)
+        - The IP traffic is sent to the ISP's router
+
+    Symmetric DSL:    Link speed in both directions is the same (upload and download)
+    asymmetric DSL:   Link speed is greater in one direction than the other
+
+
+    SPEEDS
+        Greater distance to the telco and the quality of the wiring affects DSL speed
+        ADSL generally runs at 1.5 Mbps downstream and 384 kbps upstream
+
+    PROBLEMS
+        DSL has a maximum range of 18000 feet (5,000 meters)
+
+
+CABLE INTERNET (CATV)
+    Provides always on service (like DSL) where you can use the internet and watch TV
+    Runs over a coaxial cable used to supply TV service
+    Uses some of the capacity (that would be used for another TV channel) to carry IP data
+
+    Cable TV sends all the channels to you at once. you then choose which one to watch
+        - This allows multiple TVs to watch different channels since all the channels are actually arriving
+
+    The cable modem simply connects to the cable wall jack
+        - cable modem connects to the PC over Ethernet
+    The DSLAM is replaced by a device called a Head-end (which splits the TV signals and IP traffic)
+    Cable Internet is always asymmetric
+
+    ADVANTAGES
+        Cable internet is 2-5 times faster than DSL
+        Cable signals do not degrade with the length of the cable
+
+    DISADVANTAGE
+        Cable speeds drop when lots of users are using the service
+            - Cables lines are shared since they all provide the same TV signals to each house
+
+ASYNCHRONOUS TRANSFER MODE (ATM)
+    Routers connect to an ATM switch inside the service providers network via an access link (same as frame relay)
+    Also considered a type of packet switching service
+
+    DIFFERENCE WITH FRAME RELAY
+        1. Much higher speed
+        2. Sends cells (instead of frames), these are always 53 bytes
+            - 5 byte header
+            - 48 byte payload
+
+        Two fields in the header (VCI (Virtual channel Identifier) and VPI (Virtual Path Identifier)) act as the DLCI (data link connection identifier)
+            - i.e. the address in Frame relay
+
+        Segmentation:   Router receives and Ethernet frame and splits it into 48 byte chunks to be used with ATM (i.e. ATM requires a router)
+        Reassembly:     Router at the other end reassembles the ethernet frame
+        SAR:            Segmentation and Reassembly
+
+
+CIRCUIT SWITCHING VS PACKET SWITCHING
+    Circuit Switching:      Layer 1       Point-to-point
+    Packet Switching:       Layer 2       Multipoint (frames can be sent to multiple locations)
+
+
+ACCESS ROUTERS
+
+    An access router sits at the front of a home network and provides three functions
+        1. Address assignment (i.e. DHCP server for home LAN)
+        2. Network Address Translation (NAT)
+        3. Learn Routes
+
+    ACCESS ROUTER PROCEDURE
+        - PC sends packet to default gateway (the access router)
+        - The access router forwards the packet to the ISP router as the next hop router
+        - The ISP router has a routing table for all routes on the internet
+        - The modem converts the digital signal to an analogue signal so it can be sent to the ISP router
+
+    ADDRESS ASSIGNMENT
+        - IP address on internet facing interface needs to be a public IP address to be on the internet (assigned by ISP using DHCP)
+        - IP address on the local interface needs to be statically configured
+        - Access router works as DHCP server for local PCS
+              - These will be assigned in the same subnet as the statically configured IP address on the router
+
+    LEARNING ROUTES
+        - Since the access router has only one possible destination it can use a default route
+        - Creates a default route which is the same as the default gateway (ISP router) it learned through DHCP
+            - All packets are forwarded to the ISP router
+
+    NETWORK ADDRESS TRANSLATION (NAT)
+        - All hosts on the private LAN will access the internet through the access routers public IP address
+        - Return packets will be addressed to the access router
+        - It will then translate the destination IP address to the private IP address of the correct host PC
+
+        1. PC1 192.168.1.101 sends a packet to server 128.107.1.1 through it's access router 192.168.4.1 using port 1024
+        2. PC2 192.168.4.102 also sends a packet to server 128.107.1.1 through 192.168.4.1 using port 1024
+        3. When both packets arrive at the router it recreates the packets using it's public IP address as the destination address
+        4. The router then sends the packets to server 128.107.1.1, each on a different port
+            - the mapping for each PC IP address and port to the IP address and port the router uses to forward the packets is stored in the NAT translation table
+            - When the server replys the Router will know which PC to pass the packets onto based on the port the server replied on (the source port of the segment)
+
+        NAT: Translation of just IP addresses
+        PAT: Translation of IP address and ports
+
+        Inside Host:            Host on the local LAN
+        Inside Local:           Packet passing over the local LAN
+        Inside Global:          Packet from an inside host passing over the internet with a NAT translated IP address
+        Inside Interface:       LAN facing interface on the router
+        Outside Interface:      Internet facing interface on the router

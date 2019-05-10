@@ -1,0 +1,54 @@
+
+NOTES
+  All masks must consist of an unbroken string of 1s followed by an unbroken string of zeros
+  XX are used in the subnet mask to denote bits which can be either a 1 or a 0 and still meet design requirements (i.e. 11111111 1111XXXX 00000000 00000000)
+
+CLASS-FULL NETWORKS
+
+  CLASS A: 1.0.0.0 -> 126.0.0.0            1 byte in network part of address (2^7 - 2 networks and 2^24 - 2 hosts)
+  CLASS B: 128.0.0.0 -> 191.255.0.0        2 bytes in network part of address (2^14 - 2 networks and 2^16 - 2 hosts)
+  CLASS C: 192.0.0.0 -> 223.255.255.0      3 bytes in network part of address (2^21 - 2 networks and 2^8 - 2 hosts)
+
+  network 0.0.0.0 and network 127.0.0.0 are used are reserved as the broadcast and loop-back networks
+  By definition an IP address beginning with 8 is a class A network, an IP address beginning with 130 is a class B network and an IP address beginning with 202 is a class C network
+
+
+PRIVATE IP NETWORKS
+
+  10.0.0.0                          -> class A private network (1 network)
+  172.16.0.0 -> 172.31.0.0          -> class B private network (16 networks)
+  192.168.0.0 -> 192.168.255.0      -> class C private network (256 networks)
+
+  These networks are never assigned to a company on the public internet
+  This private addressing is useful for use with NAT (network address translation), allows the private network to also connect to the internet
+
+
+  prefix notation/CIDR notation is method of decalring subnets with a / i.e. 192.168.4.0/24
+
+NUMBER OF HOSTS AND SUBNETS
+
+  number of subnets = 2^s where s = (32 - N - h) and N is the number of bits in the network mask (i.e. 8 for class A network)
+  number of hosts = 2^h - 2 where h is the number of 0 bits in the subnet mask
+
+  In some cases we can't assign the broadcast (all host bits set to 1) and network (all hosts bits set to 0) addresses as subnets
+  When using classless routing protocols (RIPv2) or VLSM we can use these two subnets, when using class-full routing protocols (RIPv1) we can not (i.e. number of subnets = 2^s - 2)
+  If the ip subnet zero global command is configured on a cisco router (is by default) then we can use the two special subnets
+
+QUICK WAY OF CALCULATING SUBNET NUMBERS
+
+  1. for the interesting octet subtract the value of the subnet mask in the interesting octet from 256
+  2. Find the multiple of this value which is closest to, but not greater than the value of the network in the interesting octet
+  Example: given network 130.4.102.1 and netmask 255.255.252.0 find the subnet address
+      - the interesting octet is the third octet where the value of the sub net is neither 255 or 0
+      - 256 - 252 = 4
+      - 4 x 25 = 100 is the closest we can get to 102 without exceeding it so we replace the third octet in the network address with 100
+      - ans: 130.4.100.0 is the network number
+      - we can then find the broadcast address for the interesting octet by adding (256 - 252) - 1 to the value of the subnet number in the interesting octet
+      - ans 100 + (256 - 252) - 4 = 103 -> 130.4.103.255 is the broadcast address
+
+CALCULATE ALL ALLOWABLE SUBNETS GIVEN A MASK
+  1. calculate the magic number by subtracting the subnet mask from 256 for the interesting octet
+  2. Then given the class network number (i.e. 130.4.0.0 for a class B network) the subnets are all multiples of the magic number in the interesting octet up to the subnet mask
+  Example: Class B network 130.4.0.0 and mask 255.255.252.0. Find all possible subnets
+      - magic number -> 256 - 252 = 4
+      - subnets = 130.4.0.0, 130.4.4.0, 130.4.8.0, 130.4.12.0, 130.4.16.0, 130.4.20.0, 130.4.24.0, ... , 130.4.248.0, 130.4.252.0

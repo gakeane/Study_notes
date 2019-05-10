@@ -1,0 +1,214 @@
+
+ABBREVIATIONS
+    DSSS:       Direct Sequence Spread Spectrum
+    BSS:        Basic Service Set
+    ESS:        extended Service Set
+
+    IDS:        Intrusion detection systems
+    IPS:        Intrusion Prevention Systems
+    SWAN:       Structured Wireless-Aware Network
+
+STANDARDS
+
+    802.11a     1999      5.0 GHz       23 channel - 11 non-overlapping channels      Max Speed: None (DSSS) 54 Mbps OFDM         Speeds: 6, 12, 24 (Mbps)
+    802.11b     1999      2.4 GHz       11 channel - 3 non-overlapping channels       Max Speed: 11 Mbps (DSSS) None OFDM         Speeds: 1, 2, 5.5, 11 (Mbps)
+    802.11g     2003      2.4 GHz       11 channel - 3 non-overlapping channels       Max Speed: 11 Mbps (DSSS) 54 Mbps OFDM      Speeds: 6, 12, 24 (Mbps)
+    802.11n               5.0/2.4 GHz   11 channel - 3 non-overlapping channels
+    302.11ac              5.0 GHz       24 non-overlapping channels
+
+
+AD-HOC MODE
+    Wireless device communicates with a small number of other devices for a short period of time
+
+INFRASTRUCTURE MODE:
+
+    Each device communicates with an access point connected to a wired Ethernet (allows connection to the internet)
+    In infrastructure mode devices can't send frames directly to each other. Instead they send them to the wireless access point which forwards the frames
+
+        Basic Service Set (BSS):            Single Access point
+        Extended Service Set (ESS):         Multiple access points forming overlapping cells to cover wider area (Same LAN/WLAN)
+
+
+LAYER 1
+    Data sent using radio waves created and received through an antenna
+    The frequency of the radio waves is the most important property with respect to wireless transmissions
+    To encode 0s and 1s onto a signal we can modulate either the frequency, amplitude or phase
+
+    The larger the frequency band the greater the amount of information that can be transfered
+        200 kHz required for a radio station
+        4.5 MHz required for a TV station
+
+    Some frequency bands are licensed so that only the person with the license is allowed broadcast on them (i.e. radio station)
+    Some frequency bands are unlicensed so that anyone can broadcast on them provided the power levels are below some threshold (i.e. a microwave)
+        - Microwaves create electromagnetic waves at 2.4 GHz
+        - Some WLAN standards and mobile phones also use this frequency range so the microwave may interfere with them
+
+    1. 900 MHz    Industrial, Scientific, Medical (ISM)               old mobile phones
+    2. 2.4 GHz    ISM                                                 802.11, 802.11b, 802.11g, new mobiles phones
+    3. 5.0 GHz    Unlicensed National Information Infrastructure      802.11a 802.11n, new mobile phones
+
+
+FREQUENCY HOPPING SPREAD SPECTRUM (FHSS)
+    Used by the original 802.11 standard
+    Hops between the different frequencies in it's band to try and avoid interference from other devices
+
+
+DIRECT SEQUENCE SPREAD SPECTRUM (DSSS)
+    Designed to be used with the 2.4 GHz band
+    Uses 11 different overlapping frequency channels, each 82 MHz wide ranging from 2.402 GHz to 2.483 GHz
+    3 of these channels do not overlap with each other. (The far left (1), far right (11) and centre(6))
+
+    When designing an ESS (multiple overlapping coverage zones) each zone should use a different non-overlapping channel
+    This allows the access point in each ESS zone to transmit (at 11 Mbps) without interfering with other Access Points
+    Typical of 802.11b and 802.11g WLANS
+
+ORTHOGONAL FREQUENCY DIVISION MULTIPLEXING (OFDM)
+    Also uses multiple non-overlapping frequency bands
+    Typical of 802.11a, 802.11n and 802.11g WLANs
+
+    802.11n also uses multiple antennas (multiple input, multiple output (MIMO))
+
+
+WIRELESS INTERFERENCE
+    Large areas of metal scatter and reflect WiFi radio waves
+    Matter partially absorbs WiFi radio waves (i.e. the shielding on a microwave)
+    Other radio waves at the same frequency will interfere with a WiFi signal
+        - Signal to noise ratio (SNR) measures the strength of the signal against the noise on the signal
+
+
+    The coverage area of an Access Point depends on the power of the access point
+    Installing high gain antennas would increase the coverage area by increasing the power (may not be legal)
+        - quadruple power will double the coverage area
+    Power of an access point is measured based on Effective Isotropic Radiated Power (EIRP)
+
+        - Placing an AP on a large metal filing cabinet increases scattering and decreases coverage area
+
+    WLAN standard support different speeds based on the strength of the signal a communicating device receives
+        - A device near the AP can communicate at the highest speed (11 Mbps on 802.11b)
+        - A device at the edge of the coverage will communicate at the slowest speed (1 Mbps on 802.11b)
+
+    Generally speaking WLAN standards that use higher frequencies can send data faster but have a smaller coverage area
+
+
+LAYER 2
+    It is impossible for wireless signals to be separated from each other the same way Ethernet LANs are
+    As such all wireless devices must use the CSMA/CD algorithm
+        - Unfortunately a sending device can not know if it's frame suffered a collision.
+        - The standards all require an acknowledgement of every frame
+        - A sending device listens for an acknowledgement after each frame. If it does not receive one it will resend the frame
+
+    NOTE: CSMA/CD is slightly different with the wireless standard. Once the medium is free the device will wait a random amount of time
+    to reduce the possibility of two devices trying to send at the same time
+        - Could hog the network by having your device not wait
+
+
+WLAN IMPLEMENTATION CHECKLIST
+
+    1. Confirm existing wired network works (VLANs, DHCP, Internet Connectivity)
+        - Ensure all interfaces that will connect to a wireless access point on a switch are in their own VLAN
+
+    2. Install access point, configure it's IP address, gateway and network mask (and DNS server), Confirm it's connectivity with the wired network
+        - Access Points are like switches so the IP address is only so it can be managed remotely
+        - straight-through cable to connect to a switch
+
+    3. Configure the APs wireless settings (Service Set Identifier (SSID))
+        - choose wireless standard (a, b, g, n, or multiple) - mixed standards tend to slow the WLAN down
+        - choose wireless channel
+        - choose transmit power
+        - Service set Identifier (SSID) 32 character text identifying the WLAN (all APs in an ESS should have the same SSID)
+
+    4. Install one Wireless client (i.e. a laptop with integrated WiFi NIC) and confirm it can connect to the wireless network
+        - By default the laptop NIC should try to discover all Access Points by listening on all frequencies on all channels
+        - The client also learns the SSID of an access point automatically (so it can use the strongest access point of an ESS)
+        - Many laptops have a switch which enables/disables the WiFi NIC
+
+    5. Configure Wireless security on the AP client
+    6. Verify everything still works
+
+
+SITE SURVEY
+    Process of finding a suitable point for an access point
+
+        - AP should be at the centre of where the clients will reside
+        - AP/clinet should not be near a large amount of metal
+        - AP/clinet should not be near a microwave or gaming station (wireless controller + headset)
+        - Dies the coverage area reach the client
+
+        - Ensure AP has the latest firmware (OS)
+        - Ensure the channel the AP is using dose not overlap with the channel of another AP in the same location
+
+
+WIRELESS LAN SECURITY
+
+    ATTACKERS
+        War Drivers:      People who want free internet (drive around looking for open access points). Use high gain directional antennas               (strong authentication)
+        Hackers:          Access information or deny service. Access wired network without having to go through internet connections (firewalls)        (encryption + authentication)
+        Employees:        Installing their own access point. No security (access), No encryption (information)                                          (intrusion detection system)
+        Rouge AP:         Attacker gained information about legitimate AP. Sets up their own AP tricking users into connecting to it                    (authentication + intrusion detection)
+
+
+    PRECAUTIONS
+        Mutual Authentication:        Cryptographic key exchange (key is never actually transmitted). Both AP and client confirm who the other is
+        Encryption:                   Prevents an attacker reading the contents of a frame
+        Intrusion tools:              Structured Wireless-Aware Network (SWAN), Intrusion detection systems (IDS) and Intrusion Prevention Systems (IPS)
+
+    SECURITY STANDARDS
+        WEP (Wired Equivalent Privacy)          1997
+        Interim Cisco Solution                  2001
+        WPA (WiFi Protected Access)             2003
+        802.11i (WPA2)                          2005        (The currently used standard)
+
+    SSID Clocking
+        - To connect to an access point (AP) the client must know the access points SSID
+        - AP sends out a beacon announcing its SSID every 100 ms
+        - The client learns the APs SSID from the beacon message
+        - The client can now connect with the AP with the strongest signal for a desired SSID
+        - The Beacon allows an attacker to find out information about an AP
+
+        - SSID clocking prevents the AP from sending out these beacon messages
+        - A Client can send out a probe message which will make the AP respond with it's SSID
+        - Enterprises sometimes use SSID clocking to keep their network hidden from the general public
+
+    MAC ADDRESS FILTERING
+        - Access point will drop any packet from a MAC address that isn't in a list of allowed MAC addresses
+        - An attacker can get around this by listening to actual traffic and copying the MAC address from this traffic as their own
+
+
+WEP PROBLEMS
+    1. Static Keys:       No dynamic key exchange meant users had to manually change keys
+    2. Small Keys:        Keys were only 64 bits and could be broken with brute force attacks
+
+CISCO SOLUTION
+    1. Dynamic Key Exchange
+    2. New Key for each packet:       If a key is discovered it will only decrypt that one packet
+    3. User authentication:           Username and password must be supplied to get access to the WiFi
+
+WPA (WiFI PROTECTED ACCESS)
+    Pretty much identical to the Cisco solution
+
+802.11i
+    - Same as WPA
+    - Uses AES as encryption much stronger with longer keys
+
+
+
+WIRELESS LAN CONTROLLER (WLC)
+    Data on a wireless network is split into two types:
+        1. Data Plane:            Wireless client activity
+        2. Control Plane:         Management data between access points
+
+    - WLC gathers all the control plane data and uses it to manage the wireless access points (usually Lightweight access points (LAP))
+    - Allows seamless transitions between access points with the same SSID
+    - Ensures all new wireless access points discovered by the WLC have the same Cisco IOS (Allows for uniform support and features)
+
+    Allows several access points to work as a single network (ESS)
+    Responsible for centralised authentication of users on a wireless network (clients can roam between access points and maintain authentication)
+    Also makes it easier to assign SSIDs and VLANs to wireless access points
+
+LIGHTWEIGHT ACCESS POINT (LAP/LWAP)
+    Must be connected to a wireless LAN controller (WLC)
+    The lightweight means they can't act independently
+
+AUTONOMOUS ACCESS POINTS
+    These access points can act independently of a wireless LAN controller
+    These are the normal access points we've covered so far

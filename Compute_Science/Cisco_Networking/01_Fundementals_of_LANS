@@ -1,0 +1,96 @@
+
+ABBRIVIATIONS
+
+    UTP:          Unshielded Twisted Pair
+    MAC:          Media Access Control
+
+    CSMA/CD:      Carrier Sense Multiple Access / Collision Detection
+
+
+ETHERNET (LAN) ALTERNATIVES
+    1. Token Ring
+    2. Fiber Distributed Data Interface (FDDI)
+    3. Asynchronous Transfer Mode (ATM)
+
+
+ETHERNET STANDARDS
+    Set of standards that define the physical and datalink layers
+    To use the Ethernet standard each host will require an Ethernet Network Interface Card (NIC)
+
+    802.3 Media Access Control (MAC) Sublayer (Physical Layer + MAC)
+    802.2 Logical Link Control (LLC) Sublayer (Remainder of the Datalink Layer)
+
+    Ethernet              (10BASE-T)      10 Mbps       100m (UTP)      802.3
+    FastEthernet          (100BASE-TX)    100 Mbps      100m (UTP)      802.3u
+    Gigabit Ethernet      (1000BASE-T)    1000 Mbps     100m (UTP)      802.3ab
+    Gigabit Ethernet      (1000BASE-LX)   1000 Mbps     5000m (Fiber)   802.3z
+
+    10BASE-2
+        Co-axial cables connected all devices to a single central Bus (no Hub or switch)
+        When a computer sends some bits to another computer all computers on the BUS receive those bits
+        If Two computers try to send data at the same time there will be a collision and the data will be lost
+        Uses the CSMA/CD algorithm to deal with collisions
+
+        All devices on the network share the bandwidth of the Bus
+        Cable length of up to 185m
+        Speed of 10 Mbps
+
+    10BASE-5
+        Same as 10BASE02 but allows cable lengths of up to 500m
+
+    CSMA/CD
+        Carrier sense - Hosts wait until the Bus is clear before sending
+        Multiple Access - Algorithm allows multiple hosts to share the bandwidth of the Bus
+        Collision detection - Collisions are detected by listening for a voltage spike on the line
+
+        In the event of a collision both sending computers wait a random amount (back-off) of time and then try to resend their data if the line is free
+        Must be implemented on all devices communicating on the network
+
+
+REPEATERS (Layer 1 Device)
+    Attenuation - loss of power of a signal as it travels over a medium
+    A repeater solves the issue of attenuation for signals sent over long distances by repeating an incoming signal exactly as it came in
+    Note that this is not the same as amplification, since this would also amplify the noise
+    Hubs, switches and Routers all act as repeaters
+
+
+HUBS (Layer 1 Device)
+    The introduction of the 10BASE-T standard saw all hosts cabled to a single centralized hub or switch (switches much more common)
+    This meant a breakage in the line would only result in the loss of access to a single host
+
+    Hubs simply receive an input signal and repeat it out all of its ports
+     - All devices connected to a HUB are in the same collision domain
+     - All devices connected to a HUB share the bandwidth
+     - All devices connected to a HUB must use CSMA/CD
+
+
+UTP Cabling
+    UTP cabling uses either 2 or 4 pairs of copper wires in a plastic jacket
+    Each wire has a different color making it easy to identify
+    RJ-45 (as 8 pin positions) connectors are used at each end of the wire
+    TIA and EIA define the standards for UTP cabling
+
+    TRANSMITTING DATA
+        When send information over a wire the current creates a magnetic field which would disrupt signals on other nearby wire
+        To prevent this UTP transmits data on two wires by passing a current through the wires in opposite directions
+        Since the wires are twisted together the opposing magnetic fields cancel each other out
+
+        A 0 is encoded as a transition from high to low voltage in the middle of a 10^-6 second interval (for 10BASE-t)
+        A 1 is encoded as a transition from low to high voltage in the middle of a 10^-6 second interval (for 10BASE-t)
+
+        Data is send over one pair of twisted wires and received over the other (at least two pairs required for FUL Duplex communication)
+        1000BASE-T uses 4 twisted pairs for communication (details below)
+
+    UTP PINOUTS
+        Hosts and Routers and wireless access points send on pins 1 and 2 and receive on pins 3 and 6
+        Switches and Hubs send on pins 3 and 6 and receive on pins 1 and 2
+
+        When connecting a PC to a Switch or HUB we use a straight through cable
+        When connecting a PC to a router or a switch to another switch (trunk) we use a cross over cable
+
+        In a cross-over cable pin 1 connects to ping 3 and pin 2 connects to pin 6
+
+    1000BASE-T CABLING
+        Uses 4 pair instead of 2
+        Can transmit and receive on all pair simultaneously
+        The cross-over cable also connects ping 4 to pin 7 and pin 5 to pin 8

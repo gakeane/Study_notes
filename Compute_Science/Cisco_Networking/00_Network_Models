@@ -1,0 +1,113 @@
+
+ABBREVIATIONS
+
+    ISO:      International Organization for Standardization
+    RFC:      Request for Comments
+    PDU:      Protocol Data Unit
+    IEEE:     Institute for Electrical and Electronic Engineers
+    TIA:      Telecommunications Association
+    EIA:      Electronic Industry Alliance
+
+    OSI:      Open Systems Interconnect
+
+    IP:       Internet Protocol                 (Layer 3)
+    TCP:      Transmission Control Protocol     (Layer 4)
+    UDP:      User Datagram Protocol            (Layer 4)
+    SMTP:     Simple Mail Transfer Protocol     (Layer 7)
+    TFTP:     Trivial File Transfer Protocol    (Layer 7)
+
+
+OSI MODEL
+    Formal attempt at an open source network model standard
+
+    Application         (Layer 7)         User authentication and communication with software outside the network stack
+    Presentation        (Layer 6)         Encryption, Compression and data formats such as ASCII and JPEG
+    Session             (Layer 5)         Controls the flow of data between two communicating machines (dialogue control) -> (SQL, NFS, SMB)
+    Transport           (Layer 4)         Data delivery, flow control and error recovery
+    Network             (Layer 3)         logical addressing, routing, sub-netting and path determination
+    Data Link           (Layer 2)         Hard ware addressing. Sending frame over a sub-network, ARP, Frame Check sequence (FCS)
+    Physical            (Layer 1)         hardware, pin and cabling standards. converting data into a string of bits for sending
+
+    The lower four layers focus on end-to-end delivery of data across a network
+
+
+DOD (DEPARTMENT OF DEFENCE) MODEL
+    Process/Application Layer
+    Host-to-Host Layer
+    Internet Layer
+    Network Access Layer
+
+
+TCP/IP MODEL
+    Informal public network model standardization created by the US defense department
+
+    Application         (Layer 4)                     HTTP, POP3, SMTP, TFTP, WWW
+    Transport           (Layer 3)       (segment)     TCP, UDP
+    Internet            (Layer 2)       (packet)      IP
+    Network Access      (Layer 1)       (frame)       Ethernet, Frame Relay, 802q, HDLC
+
+    Note: The Network access layer is often split into two layers, the Data Link Layer and the Physical layer to match the lowest two layers of the OSI model
+
+DEFINITIONS
+    Same layer interaction - communication between two separate machines at the same layer (i.e. HTTP packets between client and server)
+    Adjacent layer interaction - A lower layer in the network stack (on the same machine) provides a service for the layer above it (TCP provides reliable transport for HTTP)
+    Data Encapsulation - Each layer adds it's own header to the data as the data is passed down the network stack
+
+    PDU (Protocol Data Unit) - OSI equivilent of frame (Layer2 PDU), packet (Layer3 PDU) and segment (Layer4 PDU)
+
+APPLICATION LAYER
+    Provides a connection between services running on the OS and the network stack
+
+    Example: A web browser is a piece of software. A user requests a web page through the browser by providing the address of that web page
+    The browser uses the HTTP protocol (Layer 7) to transfer the content of the web page from the server where it is stored to the machine running the browser
+    The HTTP protocol in turn uses TCP to establish a connection to the Web server and TCP in turn uses IP and the web servers address to locate the web server on the internet
+
+
+TRANSPORT LAYER
+    Provides a service for the application Layer. that service is the reliable transmission of data across a Network
+    TCP includes an error recovery feature using acknowledgements. (i.e. if a packet is lost or corrupted in transit, then it is resent)
+    TCP also reorders packets that arrive out of turn
+    UDP does neither of these things
+
+    The main aspects of this layer are data recovery and reliable transport
+    Transport layer protocols work the same regardless of the underlying network. It is the role of the internet and Network Access Layers to understand the network topology
+
+INTERNET (IP) LAYER
+    Provides a unique address for every host on a network and is responsible for delivering a packet of information from one machine to another
+    Packets are sent across a network using routers which makes a decision on where to send the packet next based on a destination IP address
+
+    The main aspects of this layer are address and routing
+    The IP layer is not concern with the underlying technology that makes the network for each hop (i.e. Ethernet, Leased Line)
+
+NETWORK ACCESS LAYER
+    Responsible for sending a packet across a physical medium (such as Ethernet or a leased line)
+    Defines the hardware standards for each cabling type (RJ-45)
+    Defines hardware addressing for sending frames between hosts on the same sub-network
+    Also includes the physical layer which encodes the data into a string of bits to be transmitted across a medium (physical or wireless)
+
+    Includes all the variations of Ethernet protocols for LANs
+    Includes all the WAN standards such as PPP, HDLC and Frame Relay
+
+    Most Network Access Layer protocols also add a trailer to the data as well as a header
+    These Trailer and headers are removed at each hop on the route
+
+    LLC/802.2 (Logical Link Control):         Responsible for identifying the layer 3 protocol contained in the frame
+    802.3
+
+
+ADVANTAGES OF A NETWORK MODEL
+
+    - Less Complex
+    - Standard Interface
+    - Easier to Learn
+    - Easier to Develop
+    - Multivendor interoperability
+    - Modular Engineering
+
+
+HTTP PROTOCOL
+    Client sends a HTTP Header to the server. the header includes a GET request for a page (file) on the server
+    Servers responds the content of the file in the payload of the HTTP packets and a response code in the HTTP header
+
+    404: File not found on server
+    200: Request successful

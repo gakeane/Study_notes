@@ -1,0 +1,114 @@
+
+
+DEFINITIONS
+    micro-segmentation: The process of a switch segmenting a LAN into one device er collision domain
+
+
+TRANSPARENT BRIDGES (Layer 1)
+    bridges create separate collision domains on either side of the bridge
+    If one side of the bridge is busy the bridge will buffer any frames it needs to forward to that side
+
+
+ETHERNET SWITCHES (Layer 2)
+    Segment a LAN into a single device per collision domain
+    Each device can use the full bandwidth of the Ethernet and operate in full Duplex mode
+    Switches support rate adaptation so that devices that use different speeds can communicate through the switch
+
+    Unicast address:        MAC address identifying a single LAN interface
+    Broadcast address:      Destination address FFFF:FFFF:FFFF indicates all devices on the LAN should process the frame
+    Multicast address:      Multicast MAC addresses (0100.5exx.xxxx) allow subset of a LAN to communicate
+
+    1. Decide when to forward a frame and when to drop a frame based on destination MAC address
+    2. Learning MAC addresses by examining the source MAC address of each received frame
+    3. Creating a loop-free environment with other switches using Spanning Tree Protocol (STP)
+
+
+FORWARD VERSUS FILTER DECISION
+    Mac Address Table: A dynamically built table listing mac addresses and outgoing interfaces
+    The switch filters (drops) any frames which would be sent out the same interface they came in
+        - If an interface of a switch is connected to a hub which connects two hosts.
+        - When these hosts communicate the source and destination MAC addresses would both be to the hub (through the same interface on the switch)
+
+    STORE-AND-FORWARD PROCESSING
+        Most common form of forward decision processing on Cisco switches
+        The entire frame must be received before forwarding the first bit
+
+    CUT-THROUGH PROCESSING
+        Switch starts sending the frame out the output port(s) as soon as possible (once destination MAC address is received)
+        reduces the latency in the switch
+        Since the Frame Check sum (FCS) is in the trailer of the frame the switch will forward the frame before knowing if it's correct or not
+
+    FRAGMENT-FREE PROCESSING
+        Forwards the frame after receiving the first 46 bytes (the amount required for CSMA/CD to detect a collision
+        This means that frames with errors as a result of collisions are not forwarded
+
+
+LEARNING MAC ADDRESSES
+    Switches build the address table by listening for incoming frames and examining their source (only) MAC address
+    The source MAC address and the interface the frame came in are then added to the MAC address table
+    A timer is kept for each MAC address entry in the MAC address table:
+        - When a frame from this address is received the timer is reset
+        - The switch will remove the oldest entries in the table if it runs out of memory
+        - mac address table entries are cleared after 300 seconds
+
+    FLOODING FRAMES
+        When there is no entry for a destination MAC address in the MAC address table, the switch forwards the packet out all interfaces (except the incoming one)
+        Switches flood unknown unicast addresses, broadcast addresses and multicast addresses (if multicast has not been configured on the switch)
+
+
+SPANNING TREE PROTOCOL
+    Spanning tree protocol blocks some interfaces from forwarding frames so that there is only a single path between any two LAN segments (collision domains / hosts)
+    Spanning Tree protocol does not load balance the network
+    All switches must implement STP for it to function
+
+    Note: When an interface is blocked both send and receiving frames on that interface is prevented
+    Note: Spanning tree protocol works the same for a bridge or a switch
+
+
+BENEFITS OF NETWORKING DEVICES
+
+    1. Greater cabling distance:      Hub, Switch, Router
+    2. Multiple collision domains:    Switch, Router
+    3. Increased Bandwidth:           Switch, Router
+    4. Multiple Broadcast domains:    Router
+
+
+VIRTUAL LANS (VLANS)
+    When no VLANs a configured the switch considers all interfaces to be in the default VLAN (VLAN 1)
+    The switch can create multiple broadcast domains by placing different interfaces into different VLANS
+        - Each VLAN is it's own broadcast domain
+        - A router is required to move traffic from one VLAN to another (router on a stick)
+
+    ADVANTAGES OF VLANS
+        - Group users based on department rather than physical location
+        - Better security by having hosts that work with sensitive data on a separate VLAN
+        - Separate traffic sent by an IP phone (VoIP) from traffic sent by a PC
+        - Reduce number of switches required by using one switch for several LANs
+
+    To move VLAN traffic between switches we use a trunk link
+        - Here the traffic for all VLANs is passed between switches over a single link
+
+    EXTENDED VLANS
+        VLANS 2 to 1001 are the standard VLANS
+        VLANS 1006 to 4094 are the extended VLANS (require transparent bridge)
+        VLANS 1, 1002 - 1005 are special VLANS
+
+
+CAMPUS LANS
+    These are large LANs which Span many buildings and can have 100s of hosts
+
+    Core Switches:                Connect to distribution switches (not always present in smaller Campus LANs)
+    Distribution Switches:        Connect to Access switches
+    Access switches:              Connect to host devices
+
+    Generally an access switch will have two links to a distribution switch for redundancy
+
+
+CABLE REQUIREMENTS
+    10BASE-T:           CAT3 (2 pair) or better        100 m
+    100BASE-TX:         CAT5 (2 pair) or better        100 m
+    1000BASE-T          CAT5e (4 pair) or CAT6         100 m
+
+    100BASE-FX          125-micron fibre               400 m
+    1000BASE-SX         50 micron fibre                550 m
+    1000BASE-LX         9-micron fibre                 5,000 m
