@@ -1,0 +1,28 @@
+
+STACK MEMORY
+
+    -> Stack memory is the area of volatile memory which stores temporary variables created by each function (this includes main()).
+    -> The stack operates has a LiFo (last in, first out) list.
+    -> Normally when we declare a variable in C, this variable is added to the stack.
+    -> When the function exits all variables pushed onto the stack be that function are removed from the stack.
+    -> As a result the stack grows and shrinks during the programs lifetime.
+    -> There is a limit to the size the stack can grow to for each process. This is different among operating systems but is commonly 8kB.
+    -> If a process completely fills the stack, (usually through deep recursion) the process will exit with a stack overflow exception.
+    -> Variables on the stack are local, they can't be accessed by other functions and are lost when the function exits.
+    -> Reading a writing to the stack is very fast since the stack is managed by the CPU.
+    -> Since the stack is managed by the CPU we don't have to declare and clean up memory, this is handled automatically.
+    -> The downsize is that we cannot resize variables at runtime (i.e. change the size of an array).
+
+    Stack memory isn't physically allocated until it is touched (read/write). Despite this it is still undesirable to
+    assign a large amount of virtual memory for the stack as this won't leave much for other processes. Since the stack size is generally
+    8 Kb and most computes have 8 GB of RAM, this allows for 1,000,000 processes (in practice the number is smaller than this)
+
+    We can check the maximum size of the stack assigned to processes using the ulimit -s command. It is possible to change the
+    default stack size for all threads or else we can assign the stack size on a per thread basis. The programming language GO can increase
+    the size of the stack if a process hits it's limit by copying the current stack into a new larger stack.
+
+    stdlib is responsible for assigning a virtual memory block and telling the kernel (operating system) where the block is.
+
+HEAP MEMORY
+
+    -> Area of memory that is not managed by the CPU
