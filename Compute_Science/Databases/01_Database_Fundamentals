@@ -1,1 +1,88 @@
-# RELATIONAL DATABASES
+
+WHAT ARE DATABASES
+    - Databases are a way of combining large amounts of similarly structured data into tables and spreadsheets.
+
+
+ADVANTAGES OF DATABASES
+    - It is easy to see gaps in the data (i.e. a missing field in a table).
+    - Structured data is easy to update and to query.
+
+
+SCHEMA
+    - This is the structure of the tables and table attributes in a database
+    - Each database has it's own table_namespace at least one file associated with this namespace
+    - Tables in a different namespace can't access information in another namespace 
+
+
+RELATIONAL DATABASES
+    - Relational databases are databases where entries in one table can be related to entries in another table.
+    - Tables are made up of entries (rows) and each row has the same set of attributes (columns).
+    - The attribute of a tables can also be called a relation since it is these that are used to relates entries in different tables.
+
+
+TYPES OF RELATIONSHIPS
+    - There are 3 main types of relationships
+    - REF: https://support.airtable.com/hc/en-us/articles/218734758-A-beginner-s-guide-to-many-to-many-relationships
+    - Linked Record Fields are used to join/provide a relationship between two tables
+
+          1. One to Many:     This is the most common type of relationship.
+                              A single entry in one table is referenced to many entries in another table.
+                              An example of this is paintings in a gallery. Each painting can only be in one gallery, but each gallery can have multiple paintings.
+                              Each painting will only show up once in the gallery tables, but the same gallery can show up multiple times in the paintings table.
+                              Here every record in the paintings table is linked to one record in the galleries tables, whereas every record in the galleries table is linked to
+                              one of more entries in the paintings table.
+
+          2. One to One:      This is the least common of the three relational types
+                              Here a single entry in one table is related to only one entry in another table
+                              An example of this would be one person being linked to one social security number
+
+          3. Many to Many:    Here Several entries in one table can be related to several entries in another table.
+                              An example of this is customers and things they bought. Each customer can have bought multiple things and each thing can have been
+                              bought by multiple customers.
+
+                              ASIDE:
+                              In some cases when dealing with many to many relationships we need to create a third table called a join table in order to link them.
+                              An example of this is if we had a table of students and a table of classes.
+                              There is a many to many relationship since each student can take multiple classes and each class can have multiple students.
+                              If we also wanted to know the grades each student got in each classes, it would be difficult to store this information in either the students or classes table.
+                              The junction table will have an entry for each student-class relationship, so if one student took five classes, this would account for five fields in the junction table.
+                              These fields can then contain the information for the grade the student got in the class.
+                                  - We could use rollup or lookup fields to automatically pull information from the junction table into the students tables
+
+
+
+KEY TYPES
+    - Keys are used to identify an entry (row) in a table.
+    - There are several different types of key.
+
+          1. Primary Key:     Attribute used to identify an entry (row) in a table
+          2. Foreign Key:     Name of the primary key when referenced in another table
+          3. Composite Key:   When two or more attributes are used to identify an entry (i.e. first and last name)
+
+
+TRANSACTIONS
+    - Often when working with databases we need to alter several tables at once.
+    - An example of this would be making a bank transfer. Here the entry representing the balance in the credit account
+      and the entry representing the balance in the debit account both need to be updated at the same time.
+    - This is called a transaction (i.e. a set of instructions that must all be completed).
+    - Transactions must obey the ACID principals
+
+          A: Atomic       The transaction can be divided, either it all has to be completed or none of it is completed
+          C: Consistent   The transaction must leave the Database in a functioning configuration (i.e. no tables entries that don't make sense)
+          I: Isolated     During a transaction the data being modified by the transaction is locked, and can't be modified by another user
+          D: Durable      The correct data is altered, If the transaction fails at any point everything is backed out
+
+
+STRUCTURED QUERY LANGUAGE (SQL)
+
+    DBMS  (Database management systems) are the management software for generic databases
+    RDBMS (Relational Database management systems) are the management software for relational databases
+    RDBMS are designed to understand the SQL language
+
+    ANSI SQL (American national standards institute) is the minimum set of command required for an SQL language
+    MySQL is an open source SQL language with some additions to the ANSI SQL standard
+              - The MySQL RDBMS interrupts the MySQL language and modifies the database and data accordingly
+
+    SQL is a data manipulation language (DML) since it can be used to modify data in tables
+    SQL is a data definition language (DDL) since it can be used to create and delete tables
+    SQL is a data control language (DCL) since it can be used to control access to tables
